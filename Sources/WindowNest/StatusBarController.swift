@@ -18,7 +18,7 @@ final class StatusBarController {
         )
 
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "窗口巢")
+            button.image = makeStatusBarImage()
             button.imagePosition = .imageOnly
             button.target = self
             button.action = #selector(togglePopover(_:))
@@ -48,5 +48,23 @@ final class StatusBarController {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }
+    }
+
+    private func makeStatusBarImage() -> NSImage? {
+        guard let source = NSApp.applicationIconImage else {
+            return NSImage(systemSymbolName: "square.grid.2x2.fill", accessibilityDescription: "窗口巢")
+        }
+        let image = NSImage(size: NSSize(width: 18, height: 18))
+        image.lockFocus()
+        source.draw(
+            in: NSRect(x: 0, y: 0, width: 18, height: 18),
+            from: .zero,
+            operation: .sourceOver,
+            fraction: 1
+        )
+        image.unlockFocus()
+        image.isTemplate = false
+        image.accessibilityDescription = "窗口巢"
+        return image
     }
 }
