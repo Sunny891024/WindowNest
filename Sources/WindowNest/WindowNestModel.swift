@@ -4,32 +4,53 @@ import Foundation
 
 @MainActor
 final class WindowNestModel: ObservableObject {
-    @Published private(set) var accessibilityGranted = AccessibilityService.isTrusted(prompt: false)
-    @Published private(set) var statusMessage = "Choose a layout for the focused window."
+    @Published private(set) var accessibilityGranted = false
+    @Published private(set) var windowControlReady = false
+    @Published private(set) var statusMessage = "拖动窗口时会显示浮动布局板，松手后即可自动贴靠。"
     @Published private(set) var launchAtLoginEnabled = false
+    @Published private(set) var debugStatus = "等待拖动"
+    @Published private(set) var accessibilityCheckLabel = "辅助功能授权：未知"
+    @Published private(set) var windowControlLabel = "窗口控制能力：未知"
 
-    let layouts = WindowLayoutPreset.allCases
-    let hotKeys = HotKeyDefinition.defaults
+    let layouts: [WindowLayoutPreset] = [.leftHalf, .rightHalf, .topHalf, .bottomHalf, .maximize]
+    let versionLabel = "版本 0.3.0"
 
     private let windowManager = WindowManager()
     private let launchAtLoginService = LaunchAtLoginService()
-    private var hotKeyService: HotKeyService?
+    private var windowDragLayoutService: WindowDragLayoutService?
 
     init() {
+        accessibilityGranted = AccessibilityService.isTrusted(prompt: false)
+        windowControlReady = windowManager.hasResolvableWindowTarget()
         launchAtLoginEnabled = launchAtLoginService.isEnabled()
-        hotKeyService = HotKeyService { [weak self] layout in
-            Task { @MainActor in
-                self?.apply(layout)
+        windowDragLayoutService = WindowDragLayoutService(
+            onStatusMessage: { [weak self] message in
+                self?.statusMessage = message
+            },
+            onDebugStatusChange: { [weak self] debugStatus in
+                self?.debugStatus = debugStatus
             }
-        }
+        )
     }
 
     func refreshPermissions(prompt: Bool = false) {
-        accessibilityGranted = AccessibilityService.isTrusted(prompt: prompt)
-        if accessibilityGranted {
-            statusMessage = "Accessibility access is enabled."
+        if prompt {
+            AccessibilityService.requestTrustIfNeeded()
+        }
+
+        accessibilityGranted = AccessibilityService.isTrusted(prompt: false)
+        windowControlReady = windowManager.hasResolvableWindowTarget()
+        accessibilityCheckLabel = "辅助功能授权：\(accessibilityGranted ? "已开启" : "未开启")"
+        windowControlLabel = accessibilityGranted
+            ? "窗口控制状态：\(windowControlReady ? "已找到目标窗口" : "等待目标窗口")"
+            : "窗口控制状态：权限未开启"
+        windowDragLayoutService?.refreshPermissionsAllowed(accessibilityGranted)
+        if accessibilityGranted && windowControlReady {
+            statusMessage = "拖动窗口时会显示“左/右屏、全屏、上/下屏”三个浮动区域。"
+        } else if accessibilityGranted {
+            statusMessage = "辅助功能已授权。当前只是还没锁定目标窗口，先点一下要操作的窗口再试。"
         } else {
-            statusMessage = "Enable Accessibility access to control other apps' windows."
+            statusMessage = "当前辅助功能未开启。浮层可能出现，但贴靠不会真正生效。"
         }
     }
 
@@ -41,16 +62,15 @@ final class WindowNestModel: ObservableObject {
     func apply(_ layout: WindowLayoutPreset) {
         refreshPermissions(prompt: false)
 
-        guard accessibilityGranted else {
-            statusMessage = "Accessibility access is still disabled."
-            return
-        }
-
         do {
             try windowManager.apply(layout: layout)
-            statusMessage = "\(layout.title) applied to the focused window."
+            statusMessage = "已应用\(layout.title)。"
         } catch {
-            statusMessage = error.localizedDescription
+            if !windowManager.canInteractWithWindows() {
+                statusMessage = "当前还不能真正控制系统窗口。请确认“辅助功能”已对 WindowNest 生效。"
+            } else {
+                statusMessage = error.localizedDescription
+            }
         }
     }
 
@@ -58,7 +78,7 @@ final class WindowNestModel: ObservableObject {
         do {
             try launchAtLoginService.setEnabled(enabled)
             launchAtLoginEnabled = launchAtLoginService.isEnabled()
-            statusMessage = launchAtLoginEnabled ? "WindowNest will launch at login." : "Launch at login disabled."
+            statusMessage = launchAtLoginEnabled ? "已开启开机启动。" : "已关闭开机启动。"
         } catch {
             launchAtLoginEnabled = launchAtLoginService.isEnabled()
             statusMessage = error.localizedDescription
@@ -73,5 +93,17 @@ final class WindowNestModel: ObservableObject {
         }
 
         NSWorkspace.shared.open(url)
+    }
+
+    func showTestOverlay() {
+        windowDragLayoutService?.showTestOverlay()
+        statusMessage = "已手动显示浮层 3 秒。"
+    }
+
+    func runStartupChecks() {
+        refreshPermissions(prompt: true)
+        if !accessibilityGranted {
+            openAccessibilitySettings()
+        }
     }
 }

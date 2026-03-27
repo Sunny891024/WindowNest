@@ -17,31 +17,46 @@ enum WindowLayoutPreset: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .maximize: return "Maximize"
-        case .leftHalf: return "Left Half"
-        case .rightHalf: return "Right Half"
-        case .topHalf: return "Top Half"
-        case .bottomHalf: return "Bottom Half"
-        case .topLeft: return "Top Left"
-        case .topRight: return "Top Right"
-        case .bottomLeft: return "Bottom Left"
-        case .bottomRight: return "Bottom Right"
-        case .centerLarge: return "Centered"
+        case .maximize: return "全屏"
+        case .leftHalf: return "左半屏"
+        case .rightHalf: return "右半屏"
+        case .topHalf: return "上半屏"
+        case .bottomHalf: return "下半屏"
+        case .topLeft: return "左上"
+        case .topRight: return "右上"
+        case .bottomLeft: return "左下"
+        case .bottomRight: return "右下"
+        case .centerLarge: return "居中"
         }
     }
 
     var subtitle: String {
         switch self {
-        case .maximize: return "Fill usable display area"
-        case .leftHalf: return "Snap to left side"
-        case .rightHalf: return "Snap to right side"
-        case .topHalf: return "Use the upper half"
-        case .bottomHalf: return "Use the lower half"
-        case .topLeft: return "Quarter layout"
-        case .topRight: return "Quarter layout"
-        case .bottomLeft: return "Quarter layout"
-        case .bottomRight: return "Quarter layout"
-        case .centerLarge: return "Inset centered frame"
+        case .maximize: return "铺满当前屏幕可用区域"
+        case .leftHalf: return "贴靠到左侧"
+        case .rightHalf: return "贴靠到右侧"
+        case .topHalf: return "贴靠到上半部分"
+        case .bottomHalf: return "贴靠到下半部分"
+        case .topLeft: return "四分之一布局"
+        case .topRight: return "四分之一布局"
+        case .bottomLeft: return "四分之一布局"
+        case .bottomRight: return "四分之一布局"
+        case .centerLarge: return "居中显示"
+        }
+    }
+
+    var shortTitle: String {
+        switch self {
+        case .maximize: return "全屏"
+        case .leftHalf: return "左屏"
+        case .rightHalf: return "右屏"
+        case .topHalf: return "上屏"
+        case .bottomHalf: return "下屏"
+        case .topLeft: return "左上"
+        case .topRight: return "右上"
+        case .bottomLeft: return "左下"
+        case .bottomRight: return "右下"
+        case .centerLarge: return "居中"
         }
     }
 

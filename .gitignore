@@ -2,8 +2,12 @@
 /.build
 /Packages
 /dist
+*.xcuserstate
+*.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
 xcuserdata/
 DerivedData/
+/.deriveddata
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc

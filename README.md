@@ -1,24 +1,39 @@
 # WindowNest
 
-WindowNest is an original macOS window snapping utility built from scratch in SwiftUI and AppKit.
+WindowNest is a private macOS menu bar app for arranging windows by dragging them onto a simple floating layout board.
 
-## Current MVP
+## What It Does
 
-- Menu bar app with a companion window
-- Accessibility permission prompt and shortcut to System Settings
-- Layout presets for the currently focused window
-- Support for maximize, halves, quarters, and a centered layout
-- Global shortcuts for the most common layouts
-- Launch at login toggle for bundled app runs
+- Shows a centered floating layout board while you drag a window
+- Lets you drop onto three layout groups: `左 / 右屏`, `全屏`, `上 / 下屏`
+- Supports one-click manual layouts from the menu bar as a fallback
+- Includes launch-at-login support
+- Uses Accessibility and Input Monitoring permissions for cross-app window control
 
-## Open in Xcode
+## Current Direction
 
-1. Open `Package.swift` in Xcode.
-2. Run the `WindowNest` executable target.
-3. Grant Accessibility access when macOS prompts you.
+This project is intentionally built as an original product. It does not copy proprietary code or protected assets from other apps.
+
+The current product direction is:
+
+- Drag first
+- Menu bar only
+- Chinese-first UI
+- Minimal setup and fast window snapping
+
+## Run The App
+
+1. Open [WindowNest.xcodeproj](/Users/sunny/本地文件/Codex/WindowNest/WindowNest.xcodeproj) in Xcode.
+2. Build and run the `WindowNest` target.
+3. Grant `辅助功能` and `输入监控` to the built app.
+4. Drag a window and move it onto the floating layout board.
+
+For local installs outside Xcode, the app bundle can also be copied to:
+
+- [WindowNest.app](/Applications/WindowNest.app)
 
 ## Notes
 
-- This project intentionally does not copy proprietary assets or protected implementation details from other apps.
-- The current build environment in this workspace has a local Swift toolchain and SDK mismatch, so command-line compilation could not be fully verified here.
-- Launch at login requires running WindowNest as an actual app bundle rather than only from a bare SwiftPM executable.
+- Bundle identifier: `com.windownest.app`
+- Recommended for testing: the Xcode-built app or the installed `/Applications/WindowNest.app`
+- The repository still contains earlier prototype pieces, but active testing should focus on the Xcode app target

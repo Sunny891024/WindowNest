@@ -8,4 +8,8 @@ enum AccessibilityService {
         let options = [promptKey: prompt] as CFDictionary
         return AXIsProcessTrustedWithOptions(options)
     }
+
+    static func requestTrustIfNeeded() {
+        _ = isTrusted(prompt: true)
+    }
 }

@@ -11,14 +11,14 @@ final class StatusBarController {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         popover = NSPopover()
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 380, height: 620)
+        popover.contentSize = NSSize(width: 360, height: 420)
         popover.contentViewController = NSHostingController(
             rootView: ContentView()
                 .environmentObject(model)
         )
 
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "WindowNest")
+            button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "窗口巢")
             button.imagePosition = .imageOnly
             button.target = self
             button.action = #selector(togglePopover(_:))

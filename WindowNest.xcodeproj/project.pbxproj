@@ -1,0 +1,256 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* AccessibilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001010000000000000001 /* AccessibilityService.swift */; };
+		A10000020000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001020000000000000001 /* ContentView.swift */; };
+		A10000030000000000000001 /* DragLayoutOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001030000000000000001 /* DragLayoutOverlayController.swift */; };
+		A10000040000000000000001 /* DragLayoutOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001040000000000000001 /* DragLayoutOverlayView.swift */; };
+		A10000050000000000000001 /* HotKeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001050000000000000001 /* HotKeyService.swift */; };
+		A10000060000000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001060000000000000001 /* LaunchAtLoginService.swift */; };
+		A10000070000000000000001 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001070000000000000001 /* StatusBarController.swift */; };
+		A10000080000000000000001 /* WindowDragLayoutService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001080000000000000001 /* WindowDragLayoutService.swift */; };
+		A10000090000000000000001 /* WindowLayoutPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001090000000000000001 /* WindowLayoutPreset.swift */; };
+		A100000A0000000000000001 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010A0000000000000001 /* WindowManager.swift */; };
+		A100000B0000000000000001 /* WindowNestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010B0000000000000001 /* WindowNestApp.swift */; };
+		A100000C0000000000000001 /* WindowNestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010C0000000000000001 /* WindowNestModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A10001010000000000000001 /* AccessibilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/AccessibilityService.swift; sourceTree = SOURCE_ROOT; };
+		A10001020000000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/ContentView.swift; sourceTree = SOURCE_ROOT; };
+		A10001030000000000000001 /* DragLayoutOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/DragLayoutOverlayController.swift; sourceTree = SOURCE_ROOT; };
+		A10001040000000000000001 /* DragLayoutOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/DragLayoutOverlayView.swift; sourceTree = SOURCE_ROOT; };
+		A10001050000000000000001 /* HotKeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/HotKeyService.swift; sourceTree = SOURCE_ROOT; };
+		A10001060000000000000001 /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/LaunchAtLoginService.swift; sourceTree = SOURCE_ROOT; };
+		A10001070000000000000001 /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/StatusBarController.swift; sourceTree = SOURCE_ROOT; };
+		A10001080000000000000001 /* WindowDragLayoutService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowDragLayoutService.swift; sourceTree = SOURCE_ROOT; };
+		A10001090000000000000001 /* WindowLayoutPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowLayoutPreset.swift; sourceTree = SOURCE_ROOT; };
+		A100010A0000000000000001 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowManager.swift; sourceTree = SOURCE_ROOT; };
+		A100010B0000000000000001 /* WindowNestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowNestApp.swift; sourceTree = SOURCE_ROOT; };
+		A100010C0000000000000001 /* WindowNestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowNestModel.swift; sourceTree = SOURCE_ROOT; };
+		A100010D0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = WindowNest/Info.plist; sourceTree = SOURCE_ROOT; };
+		A100010E0000000000000001 /* WindowNest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WindowNest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10002000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10003000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A10003010000000000000001 /* WindowNest */,
+				A10003020000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10003010000000000000001 /* WindowNest */ = {
+			isa = PBXGroup;
+			children = (
+				A100010D0000000000000001 /* Info.plist */,
+				A10001010000000000000001 /* AccessibilityService.swift */,
+				A10001020000000000000001 /* ContentView.swift */,
+				A10001030000000000000001 /* DragLayoutOverlayController.swift */,
+				A10001040000000000000001 /* DragLayoutOverlayView.swift */,
+				A10001050000000000000001 /* HotKeyService.swift */,
+				A10001060000000000000001 /* LaunchAtLoginService.swift */,
+				A10001070000000000000001 /* StatusBarController.swift */,
+				A10001080000000000000001 /* WindowDragLayoutService.swift */,
+				A10001090000000000000001 /* WindowLayoutPreset.swift */,
+				A100010A0000000000000001 /* WindowManager.swift */,
+				A100010B0000000000000001 /* WindowNestApp.swift */,
+				A100010C0000000000000001 /* WindowNestModel.swift */,
+			);
+			path = WindowNest;
+			sourceTree = "<group>";
+		};
+		A10003020000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A100010E0000000000000001 /* WindowNest.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A10004000000000000000001 /* WindowNest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10005010000000000000001 /* Build configuration list for PBXNativeTarget "WindowNest" */;
+			buildPhases = (
+				A10006000000000000000001 /* Sources */,
+				A10002000000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WindowNest;
+			productName = WindowNest;
+			productReference = A100010E0000000000000001 /* WindowNest.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A10007000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					A10004000000000000000001 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+				};
+			};
+			buildConfigurationList = A10005000000000000000001 /* Build configuration list for PBXProject "WindowNest" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10003000000000000000001;
+			productRefGroup = A10003020000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10004000000000000000001 /* WindowNest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10006000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* AccessibilityService.swift in Sources */,
+				A10000020000000000000001 /* ContentView.swift in Sources */,
+				A10000030000000000000001 /* DragLayoutOverlayController.swift in Sources */,
+				A10000040000000000000001 /* DragLayoutOverlayView.swift in Sources */,
+				A10000050000000000000001 /* HotKeyService.swift in Sources */,
+				A10000060000000000000001 /* LaunchAtLoginService.swift in Sources */,
+				A10000070000000000000001 /* StatusBarController.swift in Sources */,
+				A10000080000000000000001 /* WindowDragLayoutService.swift in Sources */,
+				A10000090000000000000001 /* WindowLayoutPreset.swift in Sources */,
+				A100000A0000000000000001 /* WindowManager.swift in Sources */,
+				A100000B0000000000000001 /* WindowNestApp.swift in Sources */,
+				A100000C0000000000000001 /* WindowNestModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A10008000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WindowNest/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.windownest.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A10008010000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WindowNest/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.windownest.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A10008020000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A10008030000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A10005000000000000000001 /* Build configuration list for PBXProject "WindowNest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10008020000000000000001 /* Debug */,
+				A10008030000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10005010000000000000001 /* Build configuration list for PBXNativeTarget "WindowNest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10008000000000000000001 /* Debug */,
+				A10008010000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A10007000000000000000001 /* Project object */;
+}
