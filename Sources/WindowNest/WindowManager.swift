@@ -129,6 +129,12 @@ struct WindowManager {
         try setFrame(targetFrame, for: refreshedTarget.window)
     }
 
+    func apply(layout: WindowLayoutPreset, to target: ManagedWindowTarget, on screen: NSScreen) throws {
+        let refreshedTarget = refreshedTarget(for: target)
+        let targetFrame = layout.frame(in: screen.visibleFrame).integral
+        try setFrame(targetFrame, for: refreshedTarget.window)
+    }
+
     func refreshedTarget(for target: ManagedWindowTarget) -> ManagedWindowTarget {
         guard let currentFrame = readFrame(for: target.window) else {
             return target
@@ -163,6 +169,7 @@ struct WindowManager {
             return nil
         }
 
+        let preferredScreen = screenContaining(point)
         var bestMatch: (hint: WindowScreenHint, distance: CGFloat)?
 
         for info in infoList {
@@ -181,16 +188,18 @@ struct WindowManager {
                 continue
             }
 
-            for candidateFrame in normalizedWindowListFrames(for: rawBounds) {
+            for candidateFrame in normalizedWindowListFrames(for: rawBounds, around: point) {
                 let hint = WindowScreenHint(appPID: ownerPID, frame: candidateFrame)
                 let distance = distance(from: point, to: candidateFrame)
+                let sameScreen = preferredScreen.map { $0.frame.intersects(candidateFrame) } ?? true
 
                 if candidateFrame.contains(point) {
                     return hint
                 }
 
                 if let currentBest = bestMatch {
-                    if distance < currentBest.distance {
+                    let currentBestSameScreen = preferredScreen.map { $0.frame.intersects(currentBest.hint.frame) } ?? true
+                    if (sameScreen && !currentBestSameScreen) || (sameScreen == currentBestSameScreen && distance < currentBest.distance) {
                         bestMatch = (hint: hint, distance: distance)
                     }
                 } else {
@@ -396,7 +405,15 @@ struct WindowManager {
         return hypot(point.x - clampedX, point.y - clampedY)
     }
 
-    private func normalizedWindowListFrames(for rawBounds: CGRect) -> [CGRect] {
+    func screenContaining(_ point: CGPoint) -> NSScreen? {
+        if let exact = NSScreen.screens.first(where: { $0.frame.contains(point) }) {
+            return exact
+        }
+
+        return NSScreen.screens.min(by: { distance(from: point, to: $0.frame) < distance(from: point, to: $1.frame) }) ?? NSScreen.main
+    }
+
+    private func normalizedWindowListFrames(for rawBounds: CGRect, around point: CGPoint) -> [CGRect] {
         let desktop = desktopBounds()
         let flippedBounds = CGRect(
             x: rawBounds.origin.x,
@@ -409,7 +426,10 @@ struct WindowManager {
             return [rawBounds]
         }
 
-        return [rawBounds, flippedBounds]
+        let candidates = [rawBounds, flippedBounds]
+        return candidates.sorted { lhs, rhs in
+            distance(from: point, to: lhs) < distance(from: point, to: rhs)
+        }
     }
 
     private func axPoint(fromAppKitPoint point: CGPoint) -> CGPoint {

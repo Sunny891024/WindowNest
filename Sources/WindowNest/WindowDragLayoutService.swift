@@ -253,7 +253,7 @@ final class WindowDragLayoutService {
             return
         }
 
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(currentLocation) }) ?? NSScreen.main else {
+        guard let screen = windowManager.screenContaining(currentLocation) else {
             return
         }
 
@@ -305,7 +305,7 @@ final class WindowDragLayoutService {
             guard let self else { return }
 
             do {
-                try self.windowManager.apply(layout: preset, to: windowTarget)
+                try self.windowManager.apply(layout: preset, to: windowTarget, on: screen)
                 self.onStatusMessage("已将窗口移动到\(preset.title)。")
                 self.onDebugStatusChange("已释放到\(preset.title)")
             } catch {
