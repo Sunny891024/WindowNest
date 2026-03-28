@@ -7,7 +7,7 @@ final class WindowDragLayoutService {
     private struct DragSession {
         var target: ManagedWindowTarget?
         let initialMouseLocation: CGPoint
-        let initialFrame: CGRect
+        let initialFrame: CGRect?
         let startedInDragRegion: Bool
         var overlayShown = false
         var screen: NSScreen?
@@ -188,10 +188,11 @@ final class WindowDragLayoutService {
         lastBeginAttemptAt = now
 
         let mouseLocation = NSEvent.mouseLocation
-        let target = resolveDragTarget(at: mouseLocation)
-        let startedInDragRegion = target.map { draggableRegion(for: $0.frame).contains(mouseLocation) } ?? false
+        let target = resolveDragTarget(at: mouseLocation) ?? fallbackFocusedTarget(near: mouseLocation)
+        let referenceFrame = target?.frame ?? windowManager.windowHint(at: mouseLocation)?.frame
+        let startedInDragRegion = referenceFrame.map { isLikelyDragStart(location: mouseLocation, for: $0) } ?? false
 
-        guard let target, startedInDragRegion else {
+        guard startedInDragRegion else {
             cancelSession()
             onDebugStatusChange("未命中可拖动窗口区域")
             return
@@ -200,12 +201,16 @@ final class WindowDragLayoutService {
         session = DragSession(
             target: target,
             initialMouseLocation: mouseLocation,
-            initialFrame: target.frame,
+            initialFrame: referenceFrame,
             startedInDragRegion: startedInDragRegion
         )
 
-        installObserver(for: target)
-        onDebugStatusChange("已命中窗口顶部区域")
+        if let target {
+            installObserver(for: target)
+            onDebugStatusChange("已命中窗口顶部区域")
+        } else {
+            onDebugStatusChange("已识别拖动区域，等待锁定窗口")
+        }
     }
 
     private func updatePotentialDrag() {
@@ -215,17 +220,35 @@ final class WindowDragLayoutService {
         let distance = hypot(currentLocation.x - session.initialMouseLocation.x, currentLocation.y - session.initialMouseLocation.y)
         guard distance > 28 else { return }
 
+        if session.target == nil {
+            let lateTarget = resolveDragTarget(at: currentLocation) ??
+                resolveDragTarget(at: session.initialMouseLocation) ??
+                fallbackFocusedTarget(near: currentLocation) ??
+                windowManager.frontmostWindowTarget(near: currentLocation)
+            if let lateTarget {
+                session.target = lateTarget
+                installObserver(for: lateTarget)
+                onDebugStatusChange("拖动中已补抓目标窗口")
+            }
+        }
+
         let refreshedTarget = session.target.map { windowManager.refreshedTarget(for: $0) }
         session.target = refreshedTarget
         let movementDetected =
             session.movementObserved ||
-            refreshedTarget.map { isWindowActuallyMoving(initialFrame: session.initialFrame, currentFrame: $0.frame) } ??
+            (session.startedInDragRegion && distance > 32) ||
+            refreshedTarget.map { target in
+                if let initialFrame = session.initialFrame {
+                    return isWindowActuallyMoving(initialFrame: initialFrame, currentFrame: target.frame)
+                }
+                return true
+            } ??
             false
         session.movementObserved = movementDetected
 
         let likelyWindowDrag = session.startedInDragRegion && movementDetected
         if !likelyWindowDrag {
-            onDebugStatusChange("拖动已开始，但还未识别为窗口移动")
+            onDebugStatusChange(session.target == nil ? "拖动已开始，但仍未锁定窗口" : "拖动已开始，但还未识别为窗口移动")
             self.session = session
             return
         }
@@ -262,44 +285,38 @@ final class WindowDragLayoutService {
             return
         }
 
-        do {
-            let windowTarget: ManagedWindowTarget
-            if let sessionTarget = session.target {
-                windowTarget = sessionTarget
-            } else {
-                windowTarget = try windowManager.focusedWindowTarget()
-            }
-            cancelSession()
-
-            let preset = dropTarget.preset
-            onDebugStatusChange("已命中\(preset.title)，准备应用布局")
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
-                guard let self else { return }
-
-                do {
-                    try self.windowManager.apply(layout: preset, to: windowTarget)
-                    self.onStatusMessage("已将窗口移动到\(preset.title)。")
-                    self.onDebugStatusChange("已释放到\(preset.title)")
-                } catch {
-                    if !self.windowManager.canInteractWithWindows() {
-                        self.onStatusMessage("当前还不能真正控制系统窗口。请确认“辅助功能”已对 WindowNest 生效。")
-                        self.onDebugStatusChange("释放失败：窗口控制权限未生效")
-                    } else {
-                        self.onStatusMessage(error.localizedDescription)
-                        self.onDebugStatusChange("释放失败：\(error.localizedDescription)")
-                    }
-                }
-            }
-        } catch {
+        let resolvedTarget = resolveReleaseTarget(for: session, dropLocation: location)
+        guard let windowTarget = resolvedTarget else {
+            onStatusMessage("已命中布局，但松手时没能锁定目标窗口。请从窗口顶部区域开始拖动后再试。")
+            onDebugStatusChange("释放失败：松手时仍未锁定窗口")
             if !windowManager.canInteractWithWindows() {
                 onStatusMessage("当前还不能真正控制系统窗口。请确认“辅助功能”已对 WindowNest 生效。")
-                onDebugStatusChange("释放失败：窗口控制权限未生效")
-            } else {
-                onStatusMessage(error.localizedDescription)
-                onDebugStatusChange("释放失败：\(error.localizedDescription)")
             }
             cancelSession()
+            return
+        }
+
+        cancelSession()
+
+        let preset = dropTarget.preset
+        onDebugStatusChange("已命中\(preset.title)，准备应用布局")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) { [weak self] in
+            guard let self else { return }
+
+            do {
+                try self.windowManager.apply(layout: preset, to: windowTarget)
+                self.onStatusMessage("已将窗口移动到\(preset.title)。")
+                self.onDebugStatusChange("已释放到\(preset.title)")
+            } catch {
+                if !self.windowManager.canInteractWithWindows() {
+                    self.onStatusMessage("当前还不能真正控制系统窗口。请确认“辅助功能”已对 WindowNest 生效。")
+                    self.onDebugStatusChange("释放失败：窗口控制权限未生效")
+                } else {
+                    self.onStatusMessage(error.localizedDescription)
+                    self.onDebugStatusChange("释放失败：\(error.localizedDescription)")
+                }
+            }
         }
     }
 
@@ -342,7 +359,7 @@ final class WindowDragLayoutService {
         let probeOffsets: [CGFloat] = [0, -20, -40, 20]
         for offset in probeOffsets {
             let probePoint = CGPoint(x: location.x, y: location.y + offset)
-            if let hitTarget = windowManager.targetAtScreenPoint(probePoint) {
+            if let hitTarget = windowManager.targetNearScreenPoint(probePoint) {
                 return hitTarget
             }
         }
@@ -359,6 +376,58 @@ final class WindowDragLayoutService {
         }
 
         return nil
+    }
+
+    private func resolveReleaseTarget(for session: DragSession, dropLocation: CGPoint) -> ManagedWindowTarget? {
+        if let target = session.target.map({ windowManager.refreshedTarget(for: $0) }) {
+            return target
+        }
+
+        return resolveDragTarget(at: dropLocation) ??
+            resolveDragTarget(at: session.initialMouseLocation) ??
+            fallbackFocusedTarget(near: dropLocation) ??
+            fallbackFocusedTarget(near: session.initialMouseLocation) ??
+            windowManager.frontmostWindowTarget(near: dropLocation) ??
+            windowManager.frontmostWindowTarget(near: session.initialMouseLocation) ??
+            (try? windowManager.focusedWindowTarget())
+    }
+
+    private func fallbackFocusedTarget(near location: CGPoint) -> ManagedWindowTarget? {
+        guard
+            let focusedTarget = try? windowManager.focusedWindowTarget(),
+            focusedTarget.appPID != ProcessInfo.processInfo.processIdentifier
+        else {
+            return nil
+        }
+
+        let expandedFrame = focusedTarget.frame.insetBy(dx: -48, dy: -48)
+        let topHalfRegion = CGRect(
+            x: expandedFrame.minX,
+            y: expandedFrame.midY - 24,
+            width: expandedFrame.width,
+            height: expandedFrame.maxY - expandedFrame.midY + 24
+        )
+
+        guard expandedFrame.contains(location) || topHalfRegion.contains(location) else {
+            return nil
+        }
+
+        return focusedTarget
+    }
+
+    private func isLikelyDragStart(location: CGPoint, for frame: CGRect) -> Bool {
+        let strictRegion = draggableRegion(for: frame)
+        if strictRegion.contains(location) {
+            return true
+        }
+
+        let tolerantRegion = CGRect(
+            x: frame.minX - 36,
+            y: max(frame.midY - 12, frame.minY - 24),
+            width: frame.width + 72,
+            height: max(frame.maxY - frame.midY + 36, 120)
+        )
+        return tolerantRegion.contains(location)
     }
 
     private func draggableRegion(for frame: CGRect) -> CGRect {

@@ -7,37 +7,37 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000010000000000000001 /* AccessibilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001010000000000000001 /* AccessibilityService.swift */; };
-		A10000020000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001020000000000000001 /* ContentView.swift */; };
-		A10000030000000000000001 /* DragLayoutOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001030000000000000001 /* DragLayoutOverlayController.swift */; };
-		A10000040000000000000001 /* DragLayoutOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001040000000000000001 /* DragLayoutOverlayView.swift */; };
-		A10000050000000000000001 /* HotKeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001050000000000000001 /* HotKeyService.swift */; };
-		A10000060000000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001060000000000000001 /* LaunchAtLoginService.swift */; };
-		A10000070000000000000001 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001070000000000000001 /* StatusBarController.swift */; };
-		A10000080000000000000001 /* WindowDragLayoutService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001080000000000000001 /* WindowDragLayoutService.swift */; };
-		A10000090000000000000001 /* WindowLayoutPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001090000000000000001 /* WindowLayoutPreset.swift */; };
-		A100000A0000000000000001 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010A0000000000000001 /* WindowManager.swift */; };
-		A100000B0000000000000001 /* WindowNestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010B0000000000000001 /* WindowNestApp.swift */; };
-		A100000C0000000000000001 /* WindowNestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010C0000000000000001 /* WindowNestModel.swift */; };
-		A100000D0000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A100010F0000000000000001 /* Assets.xcassets */; };
+		A10000010000000000000001 /* Sources/WindowNest/AccessibilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001010000000000000001 /* Sources/WindowNest/AccessibilityService.swift */; };
+		A10000020000000000000001 /* Sources/WindowNest/ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001020000000000000001 /* Sources/WindowNest/ContentView.swift */; };
+		A10000030000000000000001 /* Sources/WindowNest/DragLayoutOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001030000000000000001 /* Sources/WindowNest/DragLayoutOverlayController.swift */; };
+		A10000040000000000000001 /* Sources/WindowNest/DragLayoutOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001040000000000000001 /* Sources/WindowNest/DragLayoutOverlayView.swift */; };
+		A10000050000000000000001 /* Sources/WindowNest/HotKeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001050000000000000001 /* Sources/WindowNest/HotKeyService.swift */; };
+		A10000060000000000000001 /* Sources/WindowNest/LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001060000000000000001 /* Sources/WindowNest/LaunchAtLoginService.swift */; };
+		A10000070000000000000001 /* Sources/WindowNest/StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001070000000000000001 /* Sources/WindowNest/StatusBarController.swift */; };
+		A10000080000000000000001 /* Sources/WindowNest/WindowDragLayoutService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001080000000000000001 /* Sources/WindowNest/WindowDragLayoutService.swift */; };
+		A10000090000000000000001 /* Sources/WindowNest/WindowLayoutPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10001090000000000000001 /* Sources/WindowNest/WindowLayoutPreset.swift */; };
+		A100000A0000000000000001 /* Sources/WindowNest/WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010A0000000000000001 /* Sources/WindowNest/WindowManager.swift */; };
+		A100000B0000000000000001 /* Sources/WindowNest/WindowNestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010B0000000000000001 /* Sources/WindowNest/WindowNestApp.swift */; };
+		A100000C0000000000000001 /* Sources/WindowNest/WindowNestModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100010C0000000000000001 /* Sources/WindowNest/WindowNestModel.swift */; };
+		A100000D0000000000000001 /* WindowNest/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A100010F0000000000000001 /* WindowNest/Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A10001010000000000000001 /* AccessibilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/AccessibilityService.swift; sourceTree = SOURCE_ROOT; };
-		A10001020000000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/ContentView.swift; sourceTree = SOURCE_ROOT; };
-		A10001030000000000000001 /* DragLayoutOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/DragLayoutOverlayController.swift; sourceTree = SOURCE_ROOT; };
-		A10001040000000000000001 /* DragLayoutOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/DragLayoutOverlayView.swift; sourceTree = SOURCE_ROOT; };
-		A10001050000000000000001 /* HotKeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/HotKeyService.swift; sourceTree = SOURCE_ROOT; };
-		A10001060000000000000001 /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/LaunchAtLoginService.swift; sourceTree = SOURCE_ROOT; };
-		A10001070000000000000001 /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/StatusBarController.swift; sourceTree = SOURCE_ROOT; };
-		A10001080000000000000001 /* WindowDragLayoutService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowDragLayoutService.swift; sourceTree = SOURCE_ROOT; };
-		A10001090000000000000001 /* WindowLayoutPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowLayoutPreset.swift; sourceTree = SOURCE_ROOT; };
-		A100010A0000000000000001 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowManager.swift; sourceTree = SOURCE_ROOT; };
-		A100010B0000000000000001 /* WindowNestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowNestApp.swift; sourceTree = SOURCE_ROOT; };
-		A100010C0000000000000001 /* WindowNestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowNestModel.swift; sourceTree = SOURCE_ROOT; };
-		A100010D0000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = WindowNest/Info.plist; sourceTree = SOURCE_ROOT; };
+		A10001010000000000000001 /* Sources/WindowNest/AccessibilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/AccessibilityService.swift; sourceTree = SOURCE_ROOT; };
+		A10001020000000000000001 /* Sources/WindowNest/ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/ContentView.swift; sourceTree = SOURCE_ROOT; };
+		A10001030000000000000001 /* Sources/WindowNest/DragLayoutOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/DragLayoutOverlayController.swift; sourceTree = SOURCE_ROOT; };
+		A10001040000000000000001 /* Sources/WindowNest/DragLayoutOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/DragLayoutOverlayView.swift; sourceTree = SOURCE_ROOT; };
+		A10001050000000000000001 /* Sources/WindowNest/HotKeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/HotKeyService.swift; sourceTree = SOURCE_ROOT; };
+		A10001060000000000000001 /* Sources/WindowNest/LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/LaunchAtLoginService.swift; sourceTree = SOURCE_ROOT; };
+		A10001070000000000000001 /* Sources/WindowNest/StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/StatusBarController.swift; sourceTree = SOURCE_ROOT; };
+		A10001080000000000000001 /* Sources/WindowNest/WindowDragLayoutService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowDragLayoutService.swift; sourceTree = SOURCE_ROOT; };
+		A10001090000000000000001 /* Sources/WindowNest/WindowLayoutPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowLayoutPreset.swift; sourceTree = SOURCE_ROOT; };
+		A100010A0000000000000001 /* Sources/WindowNest/WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowManager.swift; sourceTree = SOURCE_ROOT; };
+		A100010B0000000000000001 /* Sources/WindowNest/WindowNestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowNestApp.swift; sourceTree = SOURCE_ROOT; };
+		A100010C0000000000000001 /* Sources/WindowNest/WindowNestModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/WindowNest/WindowNestModel.swift; sourceTree = SOURCE_ROOT; };
+		A100010D0000000000000001 /* WindowNest/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = WindowNest/Info.plist; sourceTree = SOURCE_ROOT; };
 		A100010E0000000000000001 /* WindowNest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WindowNest.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A100010F0000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = WindowNest/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		A100010F0000000000000001 /* WindowNest/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = WindowNest/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,17 +49,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
-
-/* Begin PBXResourcesBuildPhase section */
-		A10006010000000000000001 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A100000D0000000000000001 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXGroup section */
 		A10003000000000000000001 = {
@@ -73,20 +62,20 @@
 		A10003010000000000000001 /* WindowNest */ = {
 			isa = PBXGroup;
 			children = (
-				A100010D0000000000000001 /* Info.plist */,
-				A100010F0000000000000001 /* Assets.xcassets */,
-				A10001010000000000000001 /* AccessibilityService.swift */,
-				A10001020000000000000001 /* ContentView.swift */,
-				A10001030000000000000001 /* DragLayoutOverlayController.swift */,
-				A10001040000000000000001 /* DragLayoutOverlayView.swift */,
-				A10001050000000000000001 /* HotKeyService.swift */,
-				A10001060000000000000001 /* LaunchAtLoginService.swift */,
-				A10001070000000000000001 /* StatusBarController.swift */,
-				A10001080000000000000001 /* WindowDragLayoutService.swift */,
-				A10001090000000000000001 /* WindowLayoutPreset.swift */,
-				A100010A0000000000000001 /* WindowManager.swift */,
-				A100010B0000000000000001 /* WindowNestApp.swift */,
-				A100010C0000000000000001 /* WindowNestModel.swift */,
+				A100010D0000000000000001 /* WindowNest/Info.plist */,
+				A100010F0000000000000001 /* WindowNest/Assets.xcassets */,
+				A10001010000000000000001 /* Sources/WindowNest/AccessibilityService.swift */,
+				A10001020000000000000001 /* Sources/WindowNest/ContentView.swift */,
+				A10001030000000000000001 /* Sources/WindowNest/DragLayoutOverlayController.swift */,
+				A10001040000000000000001 /* Sources/WindowNest/DragLayoutOverlayView.swift */,
+				A10001050000000000000001 /* Sources/WindowNest/HotKeyService.swift */,
+				A10001060000000000000001 /* Sources/WindowNest/LaunchAtLoginService.swift */,
+				A10001070000000000000001 /* Sources/WindowNest/StatusBarController.swift */,
+				A10001080000000000000001 /* Sources/WindowNest/WindowDragLayoutService.swift */,
+				A10001090000000000000001 /* Sources/WindowNest/WindowLayoutPreset.swift */,
+				A100010A0000000000000001 /* Sources/WindowNest/WindowManager.swift */,
+				A100010B0000000000000001 /* Sources/WindowNest/WindowNestApp.swift */,
+				A100010C0000000000000001 /* Sources/WindowNest/WindowNestModel.swift */,
 			);
 			path = WindowNest;
 			sourceTree = "<group>";
@@ -152,23 +141,34 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		A10006010000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A100000D0000000000000001 /* WindowNest/Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		A10006000000000000000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000010000000000000001 /* AccessibilityService.swift in Sources */,
-				A10000020000000000000001 /* ContentView.swift in Sources */,
-				A10000030000000000000001 /* DragLayoutOverlayController.swift in Sources */,
-				A10000040000000000000001 /* DragLayoutOverlayView.swift in Sources */,
-				A10000050000000000000001 /* HotKeyService.swift in Sources */,
-				A10000060000000000000001 /* LaunchAtLoginService.swift in Sources */,
-				A10000070000000000000001 /* StatusBarController.swift in Sources */,
-				A10000080000000000000001 /* WindowDragLayoutService.swift in Sources */,
-				A10000090000000000000001 /* WindowLayoutPreset.swift in Sources */,
-				A100000A0000000000000001 /* WindowManager.swift in Sources */,
-				A100000B0000000000000001 /* WindowNestApp.swift in Sources */,
-				A100000C0000000000000001 /* WindowNestModel.swift in Sources */,
+				A10000010000000000000001 /* Sources/WindowNest/AccessibilityService.swift in Sources */,
+				A10000020000000000000001 /* Sources/WindowNest/ContentView.swift in Sources */,
+				A10000030000000000000001 /* Sources/WindowNest/DragLayoutOverlayController.swift in Sources */,
+				A10000040000000000000001 /* Sources/WindowNest/DragLayoutOverlayView.swift in Sources */,
+				A10000050000000000000001 /* Sources/WindowNest/HotKeyService.swift in Sources */,
+				A10000060000000000000001 /* Sources/WindowNest/LaunchAtLoginService.swift in Sources */,
+				A10000070000000000000001 /* Sources/WindowNest/StatusBarController.swift in Sources */,
+				A10000080000000000000001 /* Sources/WindowNest/WindowDragLayoutService.swift in Sources */,
+				A10000090000000000000001 /* Sources/WindowNest/WindowLayoutPreset.swift in Sources */,
+				A100000A0000000000000001 /* Sources/WindowNest/WindowManager.swift in Sources */,
+				A100000B0000000000000001 /* Sources/WindowNest/WindowNestApp.swift in Sources */,
+				A100000C0000000000000001 /* Sources/WindowNest/WindowNestModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,14 +182,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = DJHN9K372J;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WindowNest/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.3.0;
+				MARKETING_VERSION = 0.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.windownest.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -205,14 +206,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = DJHN9K372J;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WindowNest/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.3.0;
+				MARKETING_VERSION = 0.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.windownest.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;

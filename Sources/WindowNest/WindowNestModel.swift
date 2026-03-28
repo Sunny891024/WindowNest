@@ -13,7 +13,7 @@ final class WindowNestModel: ObservableObject {
     @Published private(set) var windowControlLabel = "窗口控制能力：未知"
 
     let layouts: [WindowLayoutPreset] = [.leftHalf, .rightHalf, .topHalf, .bottomHalf, .maximize]
-    let versionLabel = "版本 0.3.0"
+    let versionLabel = "版本 0.3.6"
 
     private let windowManager = WindowManager()
     private let launchAtLoginService = LaunchAtLoginService()

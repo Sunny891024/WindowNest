@@ -32,7 +32,7 @@ struct WindowManager {
             return true
         }
 
-        return targetAtScreenPoint(NSEvent.mouseLocation) != nil
+        return targetNearScreenPoint(NSEvent.mouseLocation) != nil
     }
 
     func canInteractWithWindows() -> Bool {
@@ -54,20 +54,30 @@ struct WindowManager {
     }
 
     func focusedWindowTarget() throws -> ManagedWindowTarget {
+        let systemWideElement = AXUIElementCreateSystemWide()
+
+        if
+            let window = copyFocusedWindow(from: systemWideElement),
+            let currentFrame = readFrame(for: window)
+        {
+            var pid: pid_t = 0
+            AXUIElementGetPid(window, &pid)
+            guard pid != ProcessInfo.processInfo.processIdentifier else {
+                throw WindowManagerError.noFocusedWindow
+            }
+
+            return ManagedWindowTarget(appPID: pid, window: window, frame: currentFrame)
+        }
+
         guard let app = NSWorkspace.shared.frontmostApplication else {
             throw WindowManagerError.noFrontmostApplication
         }
 
-        let appElement = AXUIElementCreateApplication(app.processIdentifier)
-        guard let window = copyWindow(for: appElement) else {
-            throw WindowManagerError.noFocusedWindow
+        if let target = windowTarget(forAppPID: app.processIdentifier, near: NSEvent.mouseLocation) {
+            return target
         }
 
-        guard let currentFrame = readFrame(for: window) else {
-            throw WindowManagerError.failedToReadWindowFrame
-        }
-
-        return ManagedWindowTarget(appPID: app.processIdentifier, window: window, frame: currentFrame)
+        throw WindowManagerError.noFocusedWindow
     }
 
     func targetAtScreenPoint(_ point: CGPoint) -> ManagedWindowTarget? {
@@ -87,9 +97,24 @@ struct WindowManager {
         var pid: pid_t = 0
         AXUIElementGetPid(window, &pid)
         guard pid != ProcessInfo.processInfo.processIdentifier else {
-            return nil
+            return frontmostWindowTarget(near: point)
         }
         return ManagedWindowTarget(appPID: pid, window: window, frame: frame)
+    }
+
+    func targetNearScreenPoint(_ point: CGPoint) -> ManagedWindowTarget? {
+        if let exactTarget = targetAtScreenPoint(point) {
+            return exactTarget
+        }
+
+        if
+            let hint = windowHint(at: point),
+            let target = windowTarget(forAppPID: hint.appPID, near: point)
+        {
+            return target
+        }
+
+        return nil
     }
 
     func apply(layout: WindowLayoutPreset, to target: ManagedWindowTarget) throws {
@@ -112,13 +137,150 @@ struct WindowManager {
         return ManagedWindowTarget(appPID: target.appPID, window: target.window, frame: currentFrame)
     }
 
+    func frontmostWindowTarget(near point: CGPoint) -> ManagedWindowTarget? {
+        guard let app = NSWorkspace.shared.frontmostApplication else {
+            return nil
+        }
+
+        if let target = windowTarget(forAppPID: app.processIdentifier, near: point) {
+            return target
+        }
+
+        if
+            let hint = windowHint(at: point),
+            hint.appPID == app.processIdentifier
+        {
+            return windowTarget(forAppPID: hint.appPID, near: point)
+        }
+
+        return nil
+    }
+
+    func windowHint(at point: CGPoint) -> WindowScreenHint? {
+        guard
+            let infoList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
+        else {
+            return nil
+        }
+
+        var bestMatch: (hint: WindowScreenHint, distance: CGFloat)?
+
+        for info in infoList {
+            guard
+                let ownerPID = info[kCGWindowOwnerPID as String] as? pid_t,
+                ownerPID != ProcessInfo.processInfo.processIdentifier,
+                let layer = info[kCGWindowLayer as String] as? Int,
+                layer == 0,
+                let alpha = info[kCGWindowAlpha as String] as? Double,
+                alpha > 0.02,
+                let boundsValue = info[kCGWindowBounds as String] as? NSDictionary,
+                let rawBounds = CGRect(dictionaryRepresentation: boundsValue),
+                rawBounds.width > 120,
+                rawBounds.height > 80
+            else {
+                continue
+            }
+
+            for candidateFrame in normalizedWindowListFrames(for: rawBounds) {
+                let hint = WindowScreenHint(appPID: ownerPID, frame: candidateFrame)
+                let distance = distance(from: point, to: candidateFrame)
+
+                if candidateFrame.contains(point) {
+                    return hint
+                }
+
+                if let currentBest = bestMatch {
+                    if distance < currentBest.distance {
+                        bestMatch = (hint: hint, distance: distance)
+                    }
+                } else {
+                    bestMatch = (hint: hint, distance: distance)
+                }
+            }
+        }
+
+        return bestMatch?.hint
+    }
+
     private func copyWindow(for appElement: AXUIElement) -> AXUIElement? {
+        if let focused = copyAttributeElement(kAXFocusedWindowAttribute as CFString, from: appElement) {
+            return focused
+        }
+
+        if let main = copyAttributeElement(kAXMainWindowAttribute as CFString, from: appElement) {
+            return main
+        }
+
+        return nil
+    }
+
+    private func windowTarget(forAppPID pid: pid_t, near point: CGPoint?) -> ManagedWindowTarget? {
+        let appElement = AXUIElementCreateApplication(pid)
+
+        if let window = copyBestWindow(for: appElement, near: point), let frame = readFrame(for: window) {
+            return ManagedWindowTarget(appPID: pid, window: window, frame: frame)
+        }
+
+        return nil
+    }
+
+    private func copyBestWindow(for appElement: AXUIElement, near point: CGPoint?) -> AXUIElement? {
+        if let preferred = copyWindow(for: appElement) {
+            if let point, let frame = readFrame(for: preferred), frame.insetBy(dx: -40, dy: -40).contains(point) {
+                return preferred
+            }
+            if point == nil {
+                return preferred
+            }
+        }
+
+        let windows = copyWindows(for: appElement)
+        guard !windows.isEmpty else {
+            return copyWindow(for: appElement)
+        }
+
+        if let point {
+            if let contained = windows.first(where: { readFrame(for: $0)?.insetBy(dx: -40, dy: -40).contains(point) == true }) {
+                return contained
+            }
+
+            if let nearest = windows.min(by: { distance(from: point, to: readFrame(for: $0) ?? .null) < distance(from: point, to: readFrame(for: $1) ?? .null) }) {
+                return nearest
+            }
+        }
+
+        return windows.first ?? copyWindow(for: appElement)
+    }
+
+    private func copyWindows(for appElement: AXUIElement) -> [AXUIElement] {
         var value: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(
             appElement,
-            kAXFocusedWindowAttribute as CFString,
+            kAXWindowsAttribute as CFString,
             &value
         )
+
+        guard result == .success, let value else {
+            return []
+        }
+
+        guard CFGetTypeID(value) == CFArrayGetTypeID() else {
+            return []
+        }
+
+        let array = unsafeDowncast(value, to: NSArray.self)
+        return array.compactMap { item in
+            let cfItem = item as CFTypeRef
+            guard CFGetTypeID(cfItem) == AXUIElementGetTypeID() else {
+                return nil
+            }
+            return unsafeBitCast(cfItem, to: AXUIElement.self)
+        }
+    }
+
+    private func copyAttributeElement(_ attribute: CFString, from element: AXUIElement) -> AXUIElement? {
+        var value: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(element, attribute, &value)
 
         guard result == .success, let value else {
             return nil
@@ -129,6 +291,10 @@ struct WindowManager {
         }
 
         return unsafeDowncast(value, to: AXUIElement.self)
+    }
+
+    private func copyFocusedWindow(from systemWideElement: AXUIElement) -> AXUIElement? {
+        copyAttributeElement(kAXFocusedWindowAttribute as CFString, from: systemWideElement)
     }
 
     private func enclosingWindow(for element: AXUIElement) -> AXUIElement? {
@@ -219,45 +385,70 @@ struct WindowManager {
         lhs.intersection(rhs).isNull ? 0 : lhs.intersection(rhs).width * lhs.intersection(rhs).height
     }
 
-    private func axPoint(fromAppKitPoint point: CGPoint) -> CGPoint {
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) ?? NSScreen.main else {
-            return point
+    private func distance(from point: CGPoint, to frame: CGRect) -> CGFloat {
+        guard !frame.isNull else { return .greatestFiniteMagnitude }
+        if frame.contains(point) {
+            return 0
         }
 
+        let clampedX = min(max(point.x, frame.minX), frame.maxX)
+        let clampedY = min(max(point.y, frame.minY), frame.maxY)
+        return hypot(point.x - clampedX, point.y - clampedY)
+    }
+
+    private func normalizedWindowListFrames(for rawBounds: CGRect) -> [CGRect] {
+        let desktop = desktopBounds()
+        let flippedBounds = CGRect(
+            x: rawBounds.origin.x,
+            y: desktop.maxY - rawBounds.origin.y - rawBounds.height,
+            width: rawBounds.width,
+            height: rawBounds.height
+        )
+
+        if abs(flippedBounds.origin.y - rawBounds.origin.y) < 1 {
+            return [rawBounds]
+        }
+
+        return [rawBounds, flippedBounds]
+    }
+
+    private func axPoint(fromAppKitPoint point: CGPoint) -> CGPoint {
+        let desktop = desktopBounds()
         return CGPoint(
             x: point.x,
-            y: screen.frame.maxY - point.y
+            y: desktop.maxY - point.y
         )
     }
 
     private func appKitFrame(fromAXOrigin origin: CGPoint, size: CGSize) -> CGRect {
-        guard let screen = screenForAXOrigin(origin) ?? NSScreen.main else {
-            return CGRect(origin: origin, size: size)
-        }
+        let desktop = desktopBounds()
 
         return CGRect(
             x: origin.x,
-            y: screen.frame.maxY - origin.y - size.height,
+            y: desktop.maxY - origin.y - size.height,
             width: size.width,
             height: size.height
         )
     }
 
     private func axOrigin(fromAppKitFrame frame: CGRect) -> CGPoint {
-        guard let screen = bestScreen(for: frame) ?? NSScreen.main else {
-            return frame.origin
-        }
+        let desktop = desktopBounds()
 
         return CGPoint(
             x: frame.origin.x,
-            y: screen.frame.maxY - frame.maxY
+            y: desktop.maxY - frame.maxY
         )
     }
 
     private func screenForAXOrigin(_ origin: CGPoint) -> NSScreen? {
-        NSScreen.screens.first { screen in
-            origin.x >= screen.frame.minX && origin.x <= screen.frame.maxX
-        } ?? NSScreen.main
+        let appKitPoint = CGPoint(x: origin.x, y: desktopBounds().maxY - origin.y - 1)
+        return NSScreen.screens.first(where: { $0.frame.contains(appKitPoint) }) ?? NSScreen.main
+    }
+
+    private func desktopBounds() -> CGRect {
+        NSScreen.screens.reduce(into: NSScreen.main?.frame ?? .zero) { partialResult, screen in
+            partialResult = partialResult.union(screen.frame)
+        }
     }
 
     private func read(pointAttribute attribute: CFString, from element: AXUIElement) -> CGPoint? {
@@ -306,6 +497,11 @@ struct WindowManager {
 struct ManagedWindowTarget {
     let appPID: pid_t
     let window: AXUIElement
+    let frame: CGRect
+}
+
+struct WindowScreenHint {
+    let appPID: pid_t
     let frame: CGRect
 }
 
