@@ -33,6 +33,7 @@ The easiest way to install WindowNest is with the packaged DMG.
 Installer files are written to `dist` with the app version in the filename, for example:
 
 - `dist/WindowNest-0.4.4-Installer.dmg`
+- `dist/WindowNest-0.4.4-macOS.zip`
 
 Open the DMG and drag `WindowNest.app` into `Applications`.
 
