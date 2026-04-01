@@ -133,6 +133,8 @@
 			knownRegions = (
 				en,
 				Base,
+				zh-Hans,
+				zh-Hant,
 			);
 			mainGroup = A10003000000000000000001;
 			productRefGroup = A10003020000000000000001 /* Products */;
@@ -194,7 +196,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WindowNest/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.windownest.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -218,7 +220,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = WindowNest/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.4.0;
+				MARKETING_VERSION = 0.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.windownest.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;

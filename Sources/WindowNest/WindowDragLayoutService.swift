@@ -8,7 +8,7 @@ final class WindowDragLayoutService {
         var target: ManagedWindowTarget?
         let hintAppPID: pid_t?
         let initialMouseLocation: CGPoint
-        let initialFrame: CGRect?
+        var initialFrame: CGRect?
         let startedInDragRegion: Bool
         var overlayShown = false
         var screen: NSScreen?
@@ -238,6 +238,7 @@ final class WindowDragLayoutService {
                 windowManager.frontmostWindowTarget(near: currentLocation)
             if let lateTarget {
                 session.target = lateTarget
+                session.initialFrame = lateTarget.frame
                 installObserver(for: lateTarget)
                 onDebugStatusChange(AppStrings.dragCapturedWindow)
             }

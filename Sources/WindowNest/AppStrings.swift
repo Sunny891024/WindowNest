@@ -6,20 +6,20 @@ enum AppLanguage {
     case traditionalChinese
 
     static var current: AppLanguage {
-        for identifier in Locale.preferredLanguages {
-            let normalized = identifier.lowercased()
-            guard normalized.hasPrefix("zh") else {
-                continue
-            }
+        let identifier =
+            UserDefaults.standard.stringArray(forKey: "AppleLanguages")?.first ??
+            Locale.autoupdatingCurrent.identifier
+        let normalized = identifier.lowercased()
 
-            if normalized.contains("hant") || normalized.contains("tw") || normalized.contains("hk") || normalized.contains("mo") {
-                return .traditionalChinese
-            }
-
-            return .simplifiedChinese
+        guard normalized.hasPrefix("zh") else {
+            return .english
         }
 
-        return .english
+        if normalized.contains("hant") || normalized.contains("tw") || normalized.contains("hk") || normalized.contains("mo") {
+            return .traditionalChinese
+        }
+
+        return .simplifiedChinese
     }
 }
 
