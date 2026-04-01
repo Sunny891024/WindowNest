@@ -64,7 +64,7 @@ struct DragLayoutOverlayView: View {
         return RoundedRectangle(cornerRadius: 18)
             .fill(Color(red: 0.10, green: 0.18, blue: 0.27).opacity(tileActive ? 0.94 : 0.82))
             .overlay(
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 22)
                     .stroke(
                         Color(red: 0.57, green: 0.75, blue: 1.0).opacity(tileActive ? 1.0 : 0.72),
                         lineWidth: tileActive ? 4 : 2
@@ -72,11 +72,11 @@ struct DragLayoutOverlayView: View {
             )
             .overlay {
                 tileContent(for: kind)
-                    .padding(14)
+                    .padding(18)
             }
             .frame(width: frame.width, height: frame.height)
             .position(x: frame.midX, y: frame.midY)
-            .shadow(color: .black.opacity(tileActive ? 0.35 : 0.2), radius: tileActive ? 18 : 12, y: 8)
+            .shadow(color: .black.opacity(tileActive ? 0.35 : 0.2), radius: tileActive ? 20 : 14, y: 10)
             .scaleEffect(tileActive ? 1.04 : 1.0)
             .animation(.easeOut(duration: 0.08), value: tileActive)
     }
@@ -85,7 +85,7 @@ struct DragLayoutOverlayView: View {
     private func tileContent(for kind: DragLayoutTileKind) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(kind.title)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.96))
 
             GeometryReader { geometry in
@@ -139,10 +139,10 @@ struct DragLayoutOverlayView: View {
 
     private func hintCapsule(_ title: String, active: Bool) -> some View {
         Text(title)
-            .font(.caption.weight(.semibold))
+            .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(active ? .white : .white.opacity(0.76))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
             .background(
                 Capsule()
                     .fill(active ? Color(red: 0.36, green: 0.60, blue: 0.95).opacity(0.9) : Color.white.opacity(0.08))
@@ -206,11 +206,11 @@ struct DragLayoutOverlayView: View {
 
 enum DragLayoutOverlayMetrics {
     static func tileFrame(for kind: DragLayoutTileKind, in size: CGSize) -> CGRect {
-        let width = min(280, max(180, size.width * 0.2))
-        let height = width * 0.64
+        let width = min(340, max(220, size.width * 0.24))
+        let height = width * 0.72
         let gap = width * 0.16
         let centerX = size.width / 2
-        let y = size.height - height / 2 - 54
+        let y = size.height / 2
 
         switch kind {
         case .leftRight:

@@ -66,19 +66,23 @@ struct ContentView: View {
                 .controlSize(.small)
 
                 Spacer()
+            }
 
-                HStack(spacing: 8) {
-                    Text(AppStrings.launchAtLogin)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+            HStack(spacing: 10) {
+                Text(AppStrings.launchAtLogin)
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
 
-                    Toggle("", isOn: Binding(
-                        get: { model.launchAtLoginEnabled },
-                        set: { model.toggleLaunchAtLogin($0) }
-                    ))
-                    .toggleStyle(.switch)
-                    .labelsHidden()
-                }
+                Spacer()
+
+                Toggle("", isOn: Binding(
+                    get: { model.launchAtLoginEnabled },
+                    set: { model.toggleLaunchAtLogin($0) }
+                ))
+                .toggleStyle(.switch)
+                .labelsHidden()
             }
         }
         .padding(14)

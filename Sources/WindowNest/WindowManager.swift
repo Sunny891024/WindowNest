@@ -97,7 +97,7 @@ struct WindowManager {
         var pid: pid_t = 0
         AXUIElementGetPid(window, &pid)
         guard pid != ProcessInfo.processInfo.processIdentifier else {
-            return frontmostWindowTarget(near: point)
+            return nil
         }
         return ManagedWindowTarget(appPID: pid, window: window, frame: frame)
     }
@@ -148,6 +148,10 @@ struct WindowManager {
             return nil
         }
 
+        guard app.processIdentifier != ProcessInfo.processInfo.processIdentifier else {
+            return nil
+        }
+
         if let target = windowTarget(forAppPID: app.processIdentifier, near: point) {
             return target
         }
@@ -171,7 +175,11 @@ struct WindowManager {
     }
 
     func targetForAppPID(_ pid: pid_t, near point: CGPoint) -> ManagedWindowTarget? {
-        windowTarget(forAppPID: pid, near: point)
+        guard pid != ProcessInfo.processInfo.processIdentifier else {
+            return nil
+        }
+
+        return windowTarget(forAppPID: pid, near: point)
     }
 
     private func bestWindowHint(near point: CGPoint, filterPID: pid_t? = nil) -> WindowScreenHint? {

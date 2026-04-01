@@ -380,9 +380,8 @@ final class WindowDragLayoutService {
             let focusedTarget = try? windowManager.focusedWindowTarget(),
             focusedTarget.appPID != ProcessInfo.processInfo.processIdentifier
         {
-            let expandedFrame = focusedTarget.frame.insetBy(dx: -24, dy: -24)
-            let expandedDragRegion = draggableRegion(for: focusedTarget.frame).insetBy(dx: -28, dy: -20)
-            if expandedFrame.contains(location) || expandedDragRegion.contains(location) {
+            let expandedDragRegion = draggableRegion(for: focusedTarget.frame).insetBy(dx: -22, dy: -10)
+            if expandedDragRegion.contains(location) {
                 return focusedTarget
             }
         }
@@ -414,15 +413,9 @@ final class WindowDragLayoutService {
             return nil
         }
 
-        let expandedFrame = focusedTarget.frame.insetBy(dx: -48, dy: -48)
-        let topHalfRegion = CGRect(
-            x: expandedFrame.minX,
-            y: expandedFrame.midY - 24,
-            width: expandedFrame.width,
-            height: expandedFrame.maxY - expandedFrame.midY + 24
-        )
+        let expandedDragRegion = draggableRegion(for: focusedTarget.frame).insetBy(dx: -18, dy: -10)
 
-        guard expandedFrame.contains(location) || topHalfRegion.contains(location) else {
+        guard expandedDragRegion.contains(location) else {
             return nil
         }
 
@@ -436,10 +429,10 @@ final class WindowDragLayoutService {
         }
 
         let tolerantRegion = CGRect(
-            x: frame.minX - 36,
-            y: max(frame.midY - 12, frame.minY - 24),
-            width: frame.width + 72,
-            height: max(frame.maxY - frame.midY + 36, 120)
+            x: frame.minX - 18,
+            y: max(frame.maxY - 92, frame.minY - 8),
+            width: frame.width + 36,
+            height: min(108, frame.height + 20)
         )
         return tolerantRegion.contains(location)
     }
@@ -447,9 +440,9 @@ final class WindowDragLayoutService {
     private func draggableRegion(for frame: CGRect) -> CGRect {
         CGRect(
             x: frame.minX,
-            y: max(frame.maxY - 140, frame.minY),
+            y: max(frame.maxY - 82, frame.minY),
             width: frame.width,
-            height: min(140, frame.height)
+            height: min(82, frame.height)
         )
     }
 

@@ -32,7 +32,7 @@ enum AppStrings {
 
     static var ready: String { value(en: "Ready", zhHans: "已就绪", zhHant: "已就緒") }
     static var accessRequired: String { value(en: "Accessibility Access Required", zhHans: "需要辅助功能权限", zhHant: "需要輔助使用權限") }
-    static var launchAtLogin: String { value(en: "Launch at Login", zhHans: "开机启动", zhHant: "開機啟動") }
+    static var launchAtLogin: String { value(en: "Start at Login", zhHans: "开机启动", zhHant: "開機啟動") }
     static var grantAccess: String { value(en: "Grant Access", zhHans: "请求授权", zhHant: "要求授權") }
     static var openSettings: String { value(en: "Open Settings", zhHans: "打开设置", zhHant: "打開設定") }
     static var recheckAccess: String { value(en: "Check Again", zhHans: "重新检查", zhHant: "重新檢查") }
