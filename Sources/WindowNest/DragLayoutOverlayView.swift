@@ -9,9 +9,9 @@ enum DragLayoutTileKind: CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .leftRight: return "左 / 右屏"
-        case .fullscreen: return "全屏"
-        case .topBottom: return "上 / 下屏"
+        case .leftRight: return AppStrings.tileLeftRight
+        case .fullscreen: return AppStrings.tileFullscreen
+        case .topBottom: return AppStrings.tileTopBottom
         }
     }
 }
@@ -118,21 +118,21 @@ struct DragLayoutOverlayView: View {
         switch kind {
         case .leftRight:
             HStack {
-                hintCapsule("左", active: hoveredTarget == .leftHalf)
+                hintCapsule(AppStrings.leftHint, active: hoveredTarget == .leftHalf)
                 Spacer()
-                hintCapsule("右", active: hoveredTarget == .rightHalf)
+                hintCapsule(AppStrings.rightHint, active: hoveredTarget == .rightHalf)
             }
         case .fullscreen:
             HStack {
                 Spacer()
-                hintCapsule("铺满", active: hoveredTarget == .maximize)
+                hintCapsule(AppStrings.fillHint, active: hoveredTarget == .maximize)
                 Spacer()
             }
         case .topBottom:
             HStack {
-                hintCapsule("上", active: hoveredTarget == .topHalf)
+                hintCapsule(AppStrings.topHint, active: hoveredTarget == .topHalf)
                 Spacer()
-                hintCapsule("下", active: hoveredTarget == .bottomHalf)
+                hintCapsule(AppStrings.bottomHint, active: hoveredTarget == .bottomHalf)
             }
         }
     }

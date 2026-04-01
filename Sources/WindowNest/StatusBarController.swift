@@ -11,7 +11,7 @@ final class StatusBarController {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         popover = NSPopover()
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 360, height: 420)
+        popover.contentSize = NSSize(width: 368, height: 332)
         popover.contentViewController = NSHostingController(
             rootView: ContentView()
                 .environmentObject(model)
@@ -51,20 +51,21 @@ final class StatusBarController {
     }
 
     private func makeStatusBarImage() -> NSImage? {
-        guard let source = NSApp.applicationIconImage else {
-            return NSImage(systemSymbolName: "square.grid.2x2.fill", accessibilityDescription: "窗口巢")
-        }
         let image = NSImage(size: NSSize(width: 18, height: 18))
         image.lockFocus()
-        source.draw(
-            in: NSRect(x: 0, y: 0, width: 18, height: 18),
-            from: .zero,
-            operation: .sourceOver,
-            fraction: 1
-        )
+        NSColor.labelColor.setStroke()
+
+        let outer = NSBezierPath(roundedRect: NSRect(x: 1.5, y: 3.5, width: 10, height: 8.5), xRadius: 2.2, yRadius: 2.2)
+        outer.lineWidth = 1.55
+        outer.stroke()
+
+        let inner = NSBezierPath(roundedRect: NSRect(x: 6.0, y: 6.0, width: 10.5, height: 8.5), xRadius: 2.2, yRadius: 2.2)
+        inner.lineWidth = 1.55
+        inner.stroke()
+
         image.unlockFocus()
-        image.isTemplate = false
-        image.accessibilityDescription = "窗口巢"
+        image.isTemplate = true
+        image.accessibilityDescription = AppStrings.appName
         return image
     }
 }

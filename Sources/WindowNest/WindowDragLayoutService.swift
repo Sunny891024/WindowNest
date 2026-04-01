@@ -6,6 +6,7 @@ import Foundation
 final class WindowDragLayoutService {
     private struct DragSession {
         var target: ManagedWindowTarget?
+        let hintAppPID: pid_t?
         let initialMouseLocation: CGPoint
         let initialFrame: CGRect?
         let startedInDragRegion: Bool
@@ -44,32 +45,32 @@ final class WindowDragLayoutService {
 
     func refreshPermissionsAllowed(_ allowed: Bool) {
         if !allowed {
-            onDebugStatusChange("权限检测未通过，仍继续监听")
+            onDebugStatusChange(AppStrings.permissionsCheckFailedButListening)
             return
         }
 
         if session == nil {
-            onDebugStatusChange("等待拖动")
+            onDebugStatusChange(AppStrings.waitingDrag)
         }
     }
 
     func showTestOverlay() {
         guard let screen = NSScreen.main else {
-            onDebugStatusChange("没有可用屏幕")
+            onDebugStatusChange(AppStrings.noAvailableScreen)
             return
         }
 
         overlayController?.hide()
         overlayController = DragLayoutOverlayController(screen: screen)
         overlayController?.show(on: screen, hoveredTarget: nil)
-        onDebugStatusChange("测试浮层已显示")
+        onDebugStatusChange(AppStrings.overlayShowing(nil))
 
         testOverlayTimer?.invalidate()
         testOverlayTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
             Task { @MainActor in
                 self?.overlayController?.hide()
                 self?.overlayController = nil
-                self?.onDebugStatusChange("测试浮层已关闭")
+                self?.onDebugStatusChange(AppStrings.waitingDrag)
             }
         }
     }
@@ -100,7 +101,7 @@ final class WindowDragLayoutService {
             callback: callback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
-            onDebugStatusChange("事件监听创建失败")
+            onDebugStatusChange(AppStrings.eventTapCreationFailed)
             return
         }
 
@@ -110,7 +111,7 @@ final class WindowDragLayoutService {
 
         self.eventTap = eventTap
         eventTapRunLoopSource = source
-        onDebugStatusChange("事件监听已启动")
+        onDebugStatusChange(AppStrings.eventTapStarted)
     }
 
     private func startPollingFallback() {
@@ -188,18 +189,20 @@ final class WindowDragLayoutService {
         lastBeginAttemptAt = now
 
         let mouseLocation = NSEvent.mouseLocation
+        let initialHint = windowManager.windowHint(at: mouseLocation)
         let target = resolveDragTarget(at: mouseLocation) ?? fallbackFocusedTarget(near: mouseLocation)
-        let referenceFrame = target?.frame ?? windowManager.windowHint(at: mouseLocation)?.frame
+        let referenceFrame = target?.frame ?? initialHint?.frame
         let startedInDragRegion = referenceFrame.map { isLikelyDragStart(location: mouseLocation, for: $0) } ?? false
 
         guard startedInDragRegion else {
             cancelSession()
-            onDebugStatusChange("未命中可拖动窗口区域")
+            onDebugStatusChange(AppStrings.noDraggableWindowRegionHit)
             return
         }
 
         session = DragSession(
             target: target,
+            hintAppPID: target?.appPID ?? initialHint?.appPID,
             initialMouseLocation: mouseLocation,
             initialFrame: referenceFrame,
             startedInDragRegion: startedInDragRegion
@@ -207,9 +210,9 @@ final class WindowDragLayoutService {
 
         if let target {
             installObserver(for: target)
-            onDebugStatusChange("已命中窗口顶部区域")
+            onDebugStatusChange(AppStrings.hitWindowTitlebar)
         } else {
-            onDebugStatusChange("已识别拖动区域，等待锁定窗口")
+            onDebugStatusChange(AppStrings.dragRegionRecognizedAwaitingWindow)
         }
     }
 
@@ -218,17 +221,25 @@ final class WindowDragLayoutService {
 
         let currentLocation = NSEvent.mouseLocation
         let distance = hypot(currentLocation.x - session.initialMouseLocation.x, currentLocation.y - session.initialMouseLocation.y)
-        guard distance > 28 else { return }
+        guard distance > 16 else { return }
+
+        let hintedTarget = session.hintAppPID.flatMap { windowManager.windowHint(forAppPID: $0, near: currentLocation) }
+        let hintedMovementDetected = hintedTarget.map { currentHint in
+            guard let initialFrame = session.initialFrame else { return false }
+            return isWindowActuallyMoving(initialFrame: initialFrame, currentFrame: currentHint.frame)
+        } ?? false
 
         if session.target == nil {
-            let lateTarget = resolveDragTarget(at: currentLocation) ??
+            let lateTarget =
+                session.hintAppPID.flatMap { windowManager.targetForAppPID($0, near: currentLocation) } ??
+                resolveDragTarget(at: currentLocation) ??
                 resolveDragTarget(at: session.initialMouseLocation) ??
                 fallbackFocusedTarget(near: currentLocation) ??
                 windowManager.frontmostWindowTarget(near: currentLocation)
             if let lateTarget {
                 session.target = lateTarget
                 installObserver(for: lateTarget)
-                onDebugStatusChange("拖动中已补抓目标窗口")
+                onDebugStatusChange(AppStrings.dragCapturedWindow)
             }
         }
 
@@ -236,7 +247,7 @@ final class WindowDragLayoutService {
         session.target = refreshedTarget
         let movementDetected =
             session.movementObserved ||
-            (session.startedInDragRegion && distance > 32) ||
+            hintedMovementDetected ||
             refreshedTarget.map { target in
                 if let initialFrame = session.initialFrame {
                     return isWindowActuallyMoving(initialFrame: initialFrame, currentFrame: target.frame)
@@ -248,7 +259,7 @@ final class WindowDragLayoutService {
 
         let likelyWindowDrag = session.startedInDragRegion && movementDetected
         if !likelyWindowDrag {
-            onDebugStatusChange(session.target == nil ? "拖动已开始，但仍未锁定窗口" : "拖动已开始，但还未识别为窗口移动")
+            onDebugStatusChange(session.target == nil ? AppStrings.dragStartedWindowNotLocked : AppStrings.dragStartedButNoWindowMovement)
             self.session = session
             return
         }
@@ -269,7 +280,7 @@ final class WindowDragLayoutService {
         session.overlayShown = true
         session.hoveredTarget = hoveredTarget
         self.session = session
-        onDebugStatusChange(hoveredTarget.map { "浮层显示中：\($0.preset.title)" } ?? "浮层显示中")
+        onDebugStatusChange(AppStrings.overlayShowing(hoveredTarget?.preset.title))
     }
 
     private func finishPotentialDrag() {
@@ -280,17 +291,17 @@ final class WindowDragLayoutService {
         let location = NSEvent.mouseLocation
         let dropTarget = hoveredTarget(at: location, on: screen) ?? session.hoveredTarget
         guard let dropTarget else {
-            onDebugStatusChange("已松手，但没有命中任何布局")
+            onDebugStatusChange(AppStrings.releasedWithoutLayout)
             cancelSession()
             return
         }
 
         let resolvedTarget = resolveReleaseTarget(for: session, dropLocation: location)
         guard let windowTarget = resolvedTarget else {
-            onStatusMessage("已命中布局，但松手时没能锁定目标窗口。请从窗口顶部区域开始拖动后再试。")
-            onDebugStatusChange("释放失败：松手时仍未锁定窗口")
+            onStatusMessage(AppStrings.releaseFailedNoWindowLocked)
+            onDebugStatusChange(AppStrings.releaseFailedNoWindowLocked)
             if !windowManager.canInteractWithWindows() {
-                onStatusMessage("当前还不能真正控制系统窗口。请确认“辅助功能”已对 WindowNest 生效。")
+                onStatusMessage(AppStrings.cannotControlWindows)
             }
             cancelSession()
             return
@@ -299,22 +310,22 @@ final class WindowDragLayoutService {
         cancelSession()
 
         let preset = dropTarget.preset
-        onDebugStatusChange("已命中\(preset.title)，准备应用布局")
+        onDebugStatusChange(AppStrings.preparingToApply(preset.title))
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) { [weak self] in
             guard let self else { return }
 
             do {
                 try self.windowManager.apply(layout: preset, to: windowTarget, on: screen)
-                self.onStatusMessage("已将窗口移动到\(preset.title)。")
-                self.onDebugStatusChange("已释放到\(preset.title)")
+                self.onStatusMessage(AppStrings.movedWindow(to: preset.title))
+                self.onDebugStatusChange(AppStrings.releasedTo(preset.title))
             } catch {
                 if !self.windowManager.canInteractWithWindows() {
-                    self.onStatusMessage("当前还不能真正控制系统窗口。请确认“辅助功能”已对 WindowNest 生效。")
-                    self.onDebugStatusChange("释放失败：窗口控制权限未生效")
+                    self.onStatusMessage(AppStrings.cannotControlWindows)
+                    self.onDebugStatusChange(AppStrings.releaseFailedPermission)
                 } else {
                     self.onStatusMessage(error.localizedDescription)
-                    self.onDebugStatusChange("释放失败：\(error.localizedDescription)")
+                    self.onDebugStatusChange(AppStrings.releaseFailed(error.localizedDescription))
                 }
             }
         }
@@ -383,7 +394,9 @@ final class WindowDragLayoutService {
             return target
         }
 
-        return resolveDragTarget(at: dropLocation) ??
+        return session.hintAppPID.flatMap { windowManager.targetForAppPID($0, near: dropLocation) } ??
+            session.hintAppPID.flatMap { windowManager.targetForAppPID($0, near: session.initialMouseLocation) } ??
+            resolveDragTarget(at: dropLocation) ??
             resolveDragTarget(at: session.initialMouseLocation) ??
             fallbackFocusedTarget(near: dropLocation) ??
             fallbackFocusedTarget(near: session.initialMouseLocation) ??
@@ -472,7 +485,7 @@ final class WindowDragLayoutService {
         guard CFEqual(element, target.window) else { return }
         guard notification == kAXMovedNotification as String || notification == kAXResizedNotification as String else { return }
         self.session?.movementObserved = true
-        onDebugStatusChange("已收到窗口移动通知")
+        onDebugStatusChange(AppStrings.windowMovedNotificationReceived)
     }
 
     private func removeObserver() {
@@ -497,6 +510,6 @@ final class WindowDragLayoutService {
         overlayController = nil
         removeObserver()
         session = nil
-        onDebugStatusChange("等待拖动")
+        onDebugStatusChange(AppStrings.waitingDrag)
     }
 }

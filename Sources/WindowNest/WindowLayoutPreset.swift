@@ -17,46 +17,46 @@ enum WindowLayoutPreset: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .maximize: return "全屏"
-        case .leftHalf: return "左半屏"
-        case .rightHalf: return "右半屏"
-        case .topHalf: return "上半屏"
-        case .bottomHalf: return "下半屏"
-        case .topLeft: return "左上"
-        case .topRight: return "右上"
-        case .bottomLeft: return "左下"
-        case .bottomRight: return "右下"
-        case .centerLarge: return "居中"
+        case .maximize: return AppStrings.layoutMaximizeTitle
+        case .leftHalf: return AppStrings.layoutLeftHalfTitle
+        case .rightHalf: return AppStrings.layoutRightHalfTitle
+        case .topHalf: return AppStrings.layoutTopHalfTitle
+        case .bottomHalf: return AppStrings.layoutBottomHalfTitle
+        case .topLeft: return AppStrings.layoutTopLeftTitle
+        case .topRight: return AppStrings.layoutTopRightTitle
+        case .bottomLeft: return AppStrings.layoutBottomLeftTitle
+        case .bottomRight: return AppStrings.layoutBottomRightTitle
+        case .centerLarge: return AppStrings.layoutCenterLargeTitle
         }
     }
 
     var subtitle: String {
         switch self {
-        case .maximize: return "铺满当前屏幕可用区域"
-        case .leftHalf: return "贴靠到左侧"
-        case .rightHalf: return "贴靠到右侧"
-        case .topHalf: return "贴靠到上半部分"
-        case .bottomHalf: return "贴靠到下半部分"
-        case .topLeft: return "四分之一布局"
-        case .topRight: return "四分之一布局"
-        case .bottomLeft: return "四分之一布局"
-        case .bottomRight: return "四分之一布局"
-        case .centerLarge: return "居中显示"
+        case .maximize: return AppStrings.layoutMaximizeSubtitle
+        case .leftHalf: return AppStrings.layoutLeftHalfSubtitle
+        case .rightHalf: return AppStrings.layoutRightHalfSubtitle
+        case .topHalf: return AppStrings.layoutTopHalfSubtitle
+        case .bottomHalf: return AppStrings.layoutBottomHalfSubtitle
+        case .topLeft: return AppStrings.quadrantSubtitle
+        case .topRight: return AppStrings.quadrantSubtitle
+        case .bottomLeft: return AppStrings.quadrantSubtitle
+        case .bottomRight: return AppStrings.quadrantSubtitle
+        case .centerLarge: return AppStrings.layoutCenterLargeSubtitle
         }
     }
 
     var shortTitle: String {
         switch self {
-        case .maximize: return "全屏"
-        case .leftHalf: return "左屏"
-        case .rightHalf: return "右屏"
-        case .topHalf: return "上屏"
-        case .bottomHalf: return "下屏"
-        case .topLeft: return "左上"
-        case .topRight: return "右上"
-        case .bottomLeft: return "左下"
-        case .bottomRight: return "右下"
-        case .centerLarge: return "居中"
+        case .maximize: return AppStrings.fillHint
+        case .leftHalf: return AppStrings.leftHint
+        case .rightHalf: return AppStrings.rightHint
+        case .topHalf: return AppStrings.topHint
+        case .bottomHalf: return AppStrings.bottomHint
+        case .topLeft: return AppStrings.layoutTopLeftTitle
+        case .topRight: return AppStrings.layoutTopRightTitle
+        case .bottomLeft: return AppStrings.layoutBottomLeftTitle
+        case .bottomRight: return AppStrings.layoutBottomRightTitle
+        case .centerLarge: return AppStrings.layoutCenterLargeTitle
         }
     }
 

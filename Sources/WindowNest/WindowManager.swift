@@ -13,15 +13,15 @@ enum WindowManagerError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noFrontmostApplication:
-            return "No frontmost app was found."
+            return AppStrings.noFrontmostApplicationError
         case .noFocusedWindow:
-            return "No focused window was found."
+            return AppStrings.noFocusedWindowError
         case .unsupportedWindow:
-            return "The focused window does not support resizing."
+            return AppStrings.unsupportedWindowError
         case .failedToReadWindowFrame:
-            return "Unable to read the current window frame."
+            return AppStrings.failedToReadWindowFrameError
         case .failedToMoveWindow:
-            return "Unable to move the focused window."
+            return AppStrings.failedToMoveWindowError
         }
     }
 }
@@ -163,6 +163,18 @@ struct WindowManager {
     }
 
     func windowHint(at point: CGPoint) -> WindowScreenHint? {
+        bestWindowHint(near: point)
+    }
+
+    func windowHint(forAppPID pid: pid_t, near point: CGPoint) -> WindowScreenHint? {
+        bestWindowHint(near: point, filterPID: pid)
+    }
+
+    func targetForAppPID(_ pid: pid_t, near point: CGPoint) -> ManagedWindowTarget? {
+        windowTarget(forAppPID: pid, near: point)
+    }
+
+    private func bestWindowHint(near point: CGPoint, filterPID: pid_t? = nil) -> WindowScreenHint? {
         guard
             let infoList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
         else {
@@ -175,6 +187,7 @@ struct WindowManager {
         for info in infoList {
             guard
                 let ownerPID = info[kCGWindowOwnerPID as String] as? pid_t,
+                filterPID == nil || ownerPID == filterPID,
                 ownerPID != ProcessInfo.processInfo.processIdentifier,
                 let layer = info[kCGWindowLayer as String] as? Int,
                 layer == 0,
