@@ -1,39 +1,61 @@
 # WindowNest
 
-WindowNest is a private macOS menu bar app for arranging windows by dragging them onto a simple floating layout board.
+WindowNest is a lightweight macOS menu bar app for snapping windows with a floating layout board.
 
-## What It Does
+When you drag a window, WindowNest shows three large targets on the current screen so you can quickly drop the window into `Left / Right`, `Maximize`, or `Top / Bottom`.
 
-- Shows a centered floating layout board while you drag a window
-- Lets you drop onto three layout groups: `左 / 右屏`, `全屏`, `上 / 下屏`
-- Supports one-click manual layouts from the menu bar as a fallback
-- Includes launch-at-login support
-- Uses Accessibility and Input Monitoring permissions for cross-app window control
+## Highlights
 
-## Current Direction
+- Drag-first window snapping with a centered floating layout board
+- Works across multiple displays
+- Menu bar quick actions for manual fallback layouts
+- Launch at login support
+- English, Simplified Chinese, and Traditional Chinese UI
+- Minimal, native macOS interface built with SwiftUI and AppKit
 
-This project is intentionally built as an original product. It does not copy proprietary code or protected assets from other apps.
+## How It Works
 
-The current product direction is:
+1. Start dragging a window from its title bar area.
+2. WindowNest shows three layout targets on the active screen.
+3. Move the pointer onto the target you want.
+4. Release the mouse to snap the window into place.
 
-- Drag first
-- Menu bar only
-- Chinese-first UI
-- Minimal setup and fast window snapping
+The three target groups are:
 
-## Run The App
+- `Left / Right`
+- `Maximize`
+- `Top / Bottom`
 
-1. Open [WindowNest.xcodeproj](/Users/sunny/本地文件/Codex/WindowNest/WindowNest.xcodeproj) in Xcode.
-2. Build and run the `WindowNest` target.
-3. Grant `辅助功能` and `输入监控` to the built app.
-4. Drag a window and move it onto the floating layout board.
+## Installation
 
-For local installs outside Xcode, the app bundle can also be copied to:
+The easiest way to install WindowNest is with the packaged DMG:
+
+- `dist/WindowNest-Installer.dmg`
+
+Open the DMG and drag `WindowNest.app` into `Applications`.
+
+You can also run the installed app directly from:
 
 - [WindowNest.app](/Applications/WindowNest.app)
 
-## Notes
+## Permissions
+
+WindowNest needs these macOS permissions to control other apps' windows:
+
+- `Accessibility`
+- `Input Monitoring`
+
+Grant both permissions to `WindowNest.app` in `System Settings -> Privacy & Security`.
+
+## Development
+
+1. Open [WindowNest.xcodeproj](/Users/sunny/本地文件/Codex/WindowNest/WindowNest.xcodeproj) in Xcode.
+2. Build and run the `WindowNest` target.
+3. Grant the required permissions to the built app.
+4. Drag a window to test the floating layout board.
+
+## Product Notes
 
 - Bundle identifier: `com.windownest.app`
-- Recommended for testing: the Xcode-built app or the installed `/Applications/WindowNest.app`
-- The repository still contains earlier prototype pieces, but active testing should focus on the Xcode app target
+- App name stays `WindowNest` in every supported language
+- The product is intentionally original and does not copy proprietary code or assets from other apps

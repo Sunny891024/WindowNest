@@ -61,7 +61,7 @@ struct DragLayoutOverlayView: View {
         let frame = DragLayoutOverlayMetrics.tileFrame(for: kind, in: size)
         let tileActive = hoveredTarget?.tileKind == kind
 
-        return RoundedRectangle(cornerRadius: 18)
+        return RoundedRectangle(cornerRadius: 20)
             .fill(Color(red: 0.10, green: 0.18, blue: 0.27).opacity(tileActive ? 0.94 : 0.82))
             .overlay(
                 RoundedRectangle(cornerRadius: 22)
@@ -72,7 +72,7 @@ struct DragLayoutOverlayView: View {
             )
             .overlay {
                 tileContent(for: kind)
-                    .padding(18)
+                    .padding(20)
             }
             .frame(width: frame.width, height: frame.height)
             .position(x: frame.midX, y: frame.midY)
@@ -85,7 +85,7 @@ struct DragLayoutOverlayView: View {
     private func tileContent(for kind: DragLayoutTileKind) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(kind.title)
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.96))
 
             GeometryReader { geometry in
@@ -139,7 +139,7 @@ struct DragLayoutOverlayView: View {
 
     private func hintCapsule(_ title: String, active: Bool) -> some View {
         Text(title)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(active ? .white : .white.opacity(0.76))
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -206,11 +206,11 @@ struct DragLayoutOverlayView: View {
 
 enum DragLayoutOverlayMetrics {
     static func tileFrame(for kind: DragLayoutTileKind, in size: CGSize) -> CGRect {
-        let width = min(340, max(220, size.width * 0.24))
-        let height = width * 0.72
-        let gap = width * 0.16
+        let width = min(380, max(240, size.width * 0.26))
+        let height = width * 0.74
+        let gap = width * 0.14
         let centerX = size.width / 2
-        let y = size.height / 2
+        let y = min(size.height - height / 2 - 48, max(height / 2 + 40, size.height * 0.74))
 
         switch kind {
         case .leftRight:
