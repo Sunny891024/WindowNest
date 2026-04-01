@@ -144,6 +144,9 @@ enum AppStrings {
     static var waitingDrag: String { value(en: "Waiting for drag", zhHans: "等待拖动", zhHant: "等待拖動") }
     static var eventTapCreationFailed: String { value(en: "Failed to start event listener", zhHans: "事件监听创建失败", zhHant: "事件監聽建立失敗") }
     static var eventTapStarted: String { value(en: "Event listener started", zhHans: "事件监听已启动", zhHant: "事件監聽已啟動") }
+    static var eventTapRecovered: String { value(en: "Event listener recovered", zhHans: "事件监听已恢复", zhHant: "事件監聽已恢復") }
+    static var wakeRecoveryStarted: String { value(en: "System wake detected, refreshing listeners", zhHans: "检测到系统唤醒，正在刷新监听", zhHant: "偵測到系統喚醒，正在刷新監聽") }
+    static var listenerHealthCheckRecovered: String { value(en: "Listener health check recovered the drag service", zhHans: "监听自检已恢复拖动服务", zhHant: "監聽自檢已恢復拖動服務") }
     static var noDraggableWindowRegionHit: String { value(en: "Did not hit a draggable window region", zhHans: "未命中可拖动窗口区域", zhHant: "未命中可拖動視窗區域") }
     static var dragRegionRecognizedAwaitingWindow: String { value(en: "Drag region detected, waiting to lock the window", zhHans: "已识别拖动区域，等待锁定窗口", zhHant: "已識別拖動區域，等待鎖定視窗") }
     static var hitWindowTitlebar: String { value(en: "Window title area detected", zhHans: "已命中窗口顶部区域", zhHant: "已命中視窗頂部區域") }

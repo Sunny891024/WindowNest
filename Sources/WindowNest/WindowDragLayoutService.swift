@@ -31,6 +31,8 @@ final class WindowDragLayoutService {
     private var testOverlayTimer: Timer?
     private var globalMonitors: [Any] = []
     private var lastBeginAttemptAt = Date.distantPast
+    private var healthCheckTimer: Timer?
+    private var workspaceObservers: [NSObjectProtocol] = []
 
     init(
         onStatusMessage: @escaping (String) -> Void,
@@ -38,9 +40,9 @@ final class WindowDragLayoutService {
     ) {
         self.onStatusMessage = onStatusMessage
         self.onDebugStatusChange = onDebugStatusChange
-        startEventTap()
-        startGlobalMonitors()
-        startPollingFallback()
+        startInputMonitoring()
+        observeSystemLifecycle()
+        startHealthCheckTimer()
     }
 
     func refreshPermissionsAllowed(_ allowed: Bool) {
@@ -115,6 +117,7 @@ final class WindowDragLayoutService {
     }
 
     private func startPollingFallback() {
+        pollingTimer?.invalidate()
         pollingTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.pollDragFallback()
@@ -127,6 +130,8 @@ final class WindowDragLayoutService {
     }
 
     private func startGlobalMonitors() {
+        removeGlobalMonitors()
+
         let downMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown]) { [weak self] _ in
             Task { @MainActor in
                 self?.beginPotentialDrag()
@@ -146,6 +151,105 @@ final class WindowDragLayoutService {
         }
 
         globalMonitors = [downMonitor, dragMonitor, upMonitor].compactMap { $0 }
+    }
+
+    private func startInputMonitoring() {
+        startEventTap()
+        startGlobalMonitors()
+        startPollingFallback()
+    }
+
+    private func stopInputMonitoring() {
+        removeGlobalMonitors()
+
+        pollingTimer?.invalidate()
+        pollingTimer = nil
+
+        if let eventTapRunLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), eventTapRunLoopSource, .commonModes)
+        }
+        if let eventTap {
+            CFMachPortInvalidate(eventTap)
+        }
+
+        eventTapRunLoopSource = nil
+        eventTap = nil
+    }
+
+    private func restartInputMonitoring(debugMessage: String? = nil) {
+        cancelSession()
+        stopInputMonitoring()
+        lastMouseDownState = false
+        startInputMonitoring()
+
+        if let debugMessage {
+            onDebugStatusChange(debugMessage)
+        }
+    }
+
+    private func removeGlobalMonitors() {
+        for monitor in globalMonitors {
+            NSEvent.removeMonitor(monitor)
+        }
+        globalMonitors.removeAll()
+    }
+
+    private func observeSystemLifecycle() {
+        let center = NSWorkspace.shared.notificationCenter
+
+        let notifications: [Notification.Name] = [
+            NSWorkspace.didWakeNotification,
+            NSWorkspace.screensDidWakeNotification,
+            NSWorkspace.sessionDidBecomeActiveNotification
+        ]
+
+        workspaceObservers = notifications.map { name in
+            center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    self?.handleSystemWake()
+                }
+            }
+        }
+    }
+
+    private func removeSystemLifecycleObservers() {
+        let center = NSWorkspace.shared.notificationCenter
+        for observer in workspaceObservers {
+            center.removeObserver(observer)
+        }
+        workspaceObservers.removeAll()
+    }
+
+    private func startHealthCheckTimer() {
+        healthCheckTimer?.invalidate()
+        healthCheckTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.performListenerHealthCheck()
+            }
+        }
+
+        if let healthCheckTimer {
+            RunLoop.main.add(healthCheckTimer, forMode: .common)
+        }
+    }
+
+    private func performListenerHealthCheck() {
+        guard session == nil else { return }
+
+        let needsRecovery =
+            eventTap == nil ||
+            eventTapRunLoopSource == nil ||
+            pollingTimer?.isValid != true ||
+            globalMonitors.count < 3 ||
+            (eventTap.map { !CGEvent.tapIsEnabled(tap: $0) } ?? true)
+
+        guard needsRecovery else { return }
+        restartInputMonitoring(debugMessage: AppStrings.listenerHealthCheckRecovered)
+    }
+
+    private func handleSystemWake() {
+        onDebugStatusChange(AppStrings.wakeRecoveryStarted)
+        restartInputMonitoring(debugMessage: AppStrings.eventTapRecovered)
     }
 
     private func pollDragFallback() {
@@ -170,6 +274,8 @@ final class WindowDragLayoutService {
 
     private func handleEventTap(type: CGEventType) {
         switch type {
+        case .tapDisabledByTimeout, .tapDisabledByUserInput:
+            restartInputMonitoring(debugMessage: AppStrings.eventTapRecovered)
         case .leftMouseDown:
             beginPotentialDrag()
         case .leftMouseDragged:

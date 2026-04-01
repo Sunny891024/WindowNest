@@ -13,7 +13,7 @@ final class WindowNestModel: ObservableObject {
     @Published private(set) var windowControlLabel = AppStrings.windowControlLabel(accessibilityGranted: false, ready: false)
 
     let layouts: [WindowLayoutPreset] = [.leftHalf, .rightHalf, .topHalf, .bottomHalf, .maximize]
-    let version = "0.4.4"
+    let version = "0.4.5"
 
     private let windowManager = WindowManager()
     private let launchAtLoginService = LaunchAtLoginService()
