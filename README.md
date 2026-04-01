@@ -26,7 +26,13 @@
 
 ## Preview
 
-![WindowNest preview](./docs/readme/preview.png)
+### Drag Layout Board
+
+![WindowNest drag preview](./docs/readme/overlay-preview.png)
+
+### Menu Bar Panel
+
+![WindowNest menu preview](./docs/readme/menu-preview.png)
 
 ## Overview
 
