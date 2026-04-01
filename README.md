@@ -18,6 +18,16 @@
   <img alt="Languages" src="https://img.shields.io/badge/Languages-English%20%7C%20简中%20%7C%20繁中-111111?style=flat-square">
 </p>
 
+<p align="center">
+  <a href="./dist/WindowNest-0.4.4-Installer.dmg">Download DMG</a>
+  ·
+  <a href="./dist/WindowNest-0.4.4-macOS.zip">Download ZIP</a>
+</p>
+
+## Preview
+
+![WindowNest preview](./docs/readme/preview.png)
+
 ## Overview
 
 WindowNest is designed for people who want faster window management on macOS without a heavy or complicated interface. It lives quietly in the menu bar and focuses on a drag-first experience: start dragging a window, move it onto one of the floating layout targets, and release to snap it into place.
@@ -32,6 +42,14 @@ Current packaged downloads:
 | --- | --- |
 | [`WindowNest-0.4.4-Installer.dmg`](./dist/WindowNest-0.4.4-Installer.dmg) | Drag-to-Applications installer |
 | [`WindowNest-0.4.4-macOS.zip`](./dist/WindowNest-0.4.4-macOS.zip) | Direct app archive |
+
+## At A Glance
+
+- Drag a window to reveal a floating layout board
+- Snap into `Left / Right`, `Maximize`, or `Top / Bottom`
+- Works with multiple displays
+- Lives quietly in the menu bar
+- Supports English, Simplified Chinese, and Traditional Chinese
 
 ## Features
 
