@@ -28,9 +28,11 @@ The three target groups are:
 
 ## Installation
 
-The easiest way to install WindowNest is with the packaged DMG:
+The easiest way to install WindowNest is with the packaged DMG.
 
-- `dist/WindowNest-Installer.dmg`
+Installer files are written to `dist` with the app version in the filename, for example:
+
+- `dist/WindowNest-0.4.4-Installer.dmg`
 
 Open the DMG and drag `WindowNest.app` into `Applications`.
 

@@ -10,7 +10,9 @@ STAGE_DIR="$WORK_DIR/stage"
 BACKGROUND_DIR="$STAGE_DIR/.background"
 BACKGROUND_PATH="$BACKGROUND_DIR/background.png"
 RW_DMG="$WORK_DIR/$APP_NAME-installer-temp.dmg"
-FINAL_DMG="$DIST_DIR/$APP_NAME-Installer.dmg"
+APP_VERSION="$(plutil -extract CFBundleShortVersionString raw "$APP_SOURCE/Contents/Info.plist")"
+SAFE_VERSION="${APP_VERSION//[^0-9A-Za-z._-]/-}"
+FINAL_DMG="$DIST_DIR/$APP_NAME-$SAFE_VERSION-Installer.dmg"
 VOLUME_NAME="$APP_NAME Installer"
 
 if [[ ! -d "$APP_SOURCE" ]]; then
@@ -27,7 +29,7 @@ cp -R "$APP_SOURCE" "$STAGE_DIR/$APP_NAME.app"
 ln -s /Applications "$STAGE_DIR/Applications"
 chflags hidden "$BACKGROUND_DIR"
 
-rm -f "$RW_DMG" "$FINAL_DMG"
+rm -f "$RW_DMG" "$DIST_DIR/$APP_NAME-Installer.dmg" "$DIST_DIR"/"$APP_NAME"-*-Installer.dmg(N)
 
 hdiutil create \
   -srcfolder "$STAGE_DIR" \
