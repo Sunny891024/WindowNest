@@ -26,7 +26,20 @@ enum WindowManagerError: LocalizedError {
     }
 }
 
+enum DragStartProbeResult {
+    case allowed(ManagedWindowTarget)
+    case blocked
+    case unavailable
+}
+
 struct WindowManager {
+    private enum AXRoleName {
+        static let titleBar = "AXTitleBar"
+        static let toolbar = "AXToolbar"
+        static let window = "AXWindow"
+        static let group = "AXGroup"
+    }
+
     func hasResolvableWindowTarget() -> Bool {
         if (try? focusedWindowTarget()) != nil {
             return true
@@ -81,12 +94,7 @@ struct WindowManager {
     }
 
     func targetAtScreenPoint(_ point: CGPoint) -> ManagedWindowTarget? {
-        let systemWideElement = AXUIElementCreateSystemWide()
-        var element: AXUIElement?
-        let axPoint = axPoint(fromAppKitPoint: point)
-        let result = AXUIElementCopyElementAtPosition(systemWideElement, Float(axPoint.x), Float(axPoint.y), &element)
-
-        guard result == .success, let element else {
+        guard let element = elementAtScreenPoint(point) else {
             return nil
         }
 
@@ -100,6 +108,40 @@ struct WindowManager {
             return nil
         }
         return ManagedWindowTarget(appPID: pid, window: window, frame: frame)
+    }
+
+    func dragStartProbe(at point: CGPoint) -> DragStartProbeResult {
+        guard let element = elementAtScreenPoint(point) else {
+            return .unavailable
+        }
+
+        guard let window = enclosingWindow(for: element), let frame = readFrame(for: window) else {
+            return .unavailable
+        }
+
+        var pid: pid_t = 0
+        AXUIElementGetPid(window, &pid)
+        guard pid != ProcessInfo.processInfo.processIdentifier else {
+            return .blocked
+        }
+
+        let roles = roleChain(from: element)
+        let target = ManagedWindowTarget(appPID: pid, window: window, frame: frame)
+
+        if roles.contains(AXRoleName.titleBar) || roles.contains(AXRoleName.toolbar) {
+            return .allowed(target)
+        }
+
+        let neutralRoles: Set<String> = [
+            AXRoleName.window,
+            AXRoleName.group
+        ]
+
+        if strictTitlebarRegion(for: frame).contains(point) && roles.allSatisfy({ neutralRoles.contains($0) }) {
+            return .allowed(target)
+        }
+
+        return .blocked
     }
 
     func targetNearScreenPoint(_ point: CGPoint) -> ManagedWindowTarget? {
@@ -327,6 +369,19 @@ struct WindowManager {
         copyAttributeElement(kAXFocusedWindowAttribute as CFString, from: systemWideElement)
     }
 
+    private func elementAtScreenPoint(_ point: CGPoint) -> AXUIElement? {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var element: AXUIElement?
+        let axPoint = axPoint(fromAppKitPoint: point)
+        let result = AXUIElementCopyElementAtPosition(systemWideElement, Float(axPoint.x), Float(axPoint.y), &element)
+
+        guard result == .success, let element else {
+            return nil
+        }
+
+        return element
+    }
+
     private func enclosingWindow(for element: AXUIElement) -> AXUIElement? {
         if role(of: element) == kAXWindowRole as String {
             return element
@@ -355,6 +410,26 @@ struct WindowManager {
         }
 
         return value as? String
+    }
+
+    private func roleChain(from element: AXUIElement) -> [String] {
+        var roles: [String] = []
+        var current: AXUIElement? = element
+        var depth = 0
+
+        while let node = current, depth < 10 {
+            if let role = role(of: node) {
+                roles.append(role)
+                if role == kAXWindowRole as String {
+                    break
+                }
+            }
+
+            current = parent(of: node)
+            depth += 1
+        }
+
+        return roles
     }
 
     private func parent(of element: AXUIElement) -> AXUIElement? {
@@ -424,6 +499,15 @@ struct WindowManager {
         let clampedX = min(max(point.x, frame.minX), frame.maxX)
         let clampedY = min(max(point.y, frame.minY), frame.maxY)
         return hypot(point.x - clampedX, point.y - clampedY)
+    }
+
+    private func strictTitlebarRegion(for frame: CGRect) -> CGRect {
+        CGRect(
+            x: frame.minX,
+            y: max(frame.maxY - 48, frame.minY),
+            width: frame.width,
+            height: min(48, frame.height)
+        )
     }
 
     func screenContaining(_ point: CGPoint) -> NSScreen? {

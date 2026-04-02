@@ -296,9 +296,27 @@ final class WindowDragLayoutService {
 
         let mouseLocation = NSEvent.mouseLocation
         let initialHint = windowManager.windowHint(at: mouseLocation)
-        let target = resolveDragTarget(at: mouseLocation) ?? fallbackFocusedTarget(near: mouseLocation)
-        let referenceFrame = target?.frame ?? initialHint?.frame
-        let startedInDragRegion = referenceFrame.map { isLikelyDragStart(location: mouseLocation, for: $0) } ?? false
+        let dragStartProbe = windowManager.dragStartProbe(at: mouseLocation)
+
+        let target: ManagedWindowTarget?
+        let referenceFrame: CGRect?
+        let startedInDragRegion: Bool
+
+        switch dragStartProbe {
+        case .allowed(let resolvedTarget):
+            target = resolvedTarget
+            referenceFrame = resolvedTarget.frame
+            startedInDragRegion = true
+        case .blocked:
+            cancelSession()
+            onDebugStatusChange(AppStrings.noDraggableWindowRegionHit)
+            return
+        case .unavailable:
+            let fallbackTarget = resolveDragTarget(at: mouseLocation) ?? fallbackFocusedTarget(near: mouseLocation)
+            target = fallbackTarget
+            referenceFrame = fallbackTarget?.frame ?? initialHint?.frame
+            startedInDragRegion = referenceFrame.map { isLikelyDragStart(location: mouseLocation, for: $0) } ?? false
+        }
 
         guard startedInDragRegion else {
             cancelSession()
@@ -529,26 +547,15 @@ final class WindowDragLayoutService {
     }
 
     private func isLikelyDragStart(location: CGPoint, for frame: CGRect) -> Bool {
-        let strictRegion = draggableRegion(for: frame)
-        if strictRegion.contains(location) {
-            return true
-        }
-
-        let tolerantRegion = CGRect(
-            x: frame.minX - 18,
-            y: max(frame.maxY - 92, frame.minY - 8),
-            width: frame.width + 36,
-            height: min(108, frame.height + 20)
-        )
-        return tolerantRegion.contains(location)
+        draggableRegion(for: frame).contains(location)
     }
 
     private func draggableRegion(for frame: CGRect) -> CGRect {
         CGRect(
             x: frame.minX,
-            y: max(frame.maxY - 82, frame.minY),
+            y: max(frame.maxY - 56, frame.minY),
             width: frame.width,
-            height: min(82, frame.height)
+            height: min(56, frame.height)
         )
     }
 
