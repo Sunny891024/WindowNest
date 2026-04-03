@@ -14,6 +14,7 @@ final class WindowDragLayoutService {
         var screen: NSScreen?
         var hoveredTarget: DragLayoutDropTarget?
         var movementObserved = false
+        var movementEvidenceCount = 0
     }
 
     private let windowManager = WindowManager()
@@ -347,12 +348,6 @@ final class WindowDragLayoutService {
         let distance = hypot(currentLocation.x - session.initialMouseLocation.x, currentLocation.y - session.initialMouseLocation.y)
         guard distance > 16 else { return }
 
-        let hintedTarget = session.hintAppPID.flatMap { windowManager.windowHint(forAppPID: $0, near: currentLocation) }
-        let hintedMovementDetected = hintedTarget.map { currentHint in
-            guard let initialFrame = session.initialFrame else { return false }
-            return isWindowActuallyMoving(initialFrame: initialFrame, currentFrame: currentHint.frame)
-        } ?? false
-
         if session.target == nil {
             let lateTarget =
                 session.hintAppPID.flatMap { windowManager.targetForAppPID($0, near: currentLocation) } ??
@@ -363,6 +358,7 @@ final class WindowDragLayoutService {
             if let lateTarget {
                 session.target = lateTarget
                 session.initialFrame = lateTarget.frame
+                session.movementEvidenceCount = 0
                 installObserver(for: lateTarget)
                 onDebugStatusChange(AppStrings.dragCapturedWindow)
             }
@@ -370,19 +366,23 @@ final class WindowDragLayoutService {
 
         let refreshedTarget = session.target.map { windowManager.refreshedTarget(for: $0) }
         session.target = refreshedTarget
-        let movementDetected =
-            session.movementObserved ||
-            hintedMovementDetected ||
-            refreshedTarget.map { target in
-                if let initialFrame = session.initialFrame {
-                    return isWindowActuallyMoving(initialFrame: initialFrame, currentFrame: target.frame)
-                }
-                return true
-            } ??
-            false
-        session.movementObserved = movementDetected
+        let directMovementDetected = refreshedTarget.map { target in
+            guard let initialFrame = session.initialFrame else { return false }
+            return isWindowActuallyMoving(initialFrame: initialFrame, currentFrame: target.frame)
+        } ?? false
 
-        let likelyWindowDrag = session.startedInDragRegion && movementDetected
+        if !session.movementObserved {
+            if directMovementDetected {
+                session.movementEvidenceCount += 1
+                if session.movementEvidenceCount >= 2 {
+                    session.movementObserved = true
+                }
+            } else {
+                session.movementEvidenceCount = 0
+            }
+        }
+
+        let likelyWindowDrag = session.startedInDragRegion && session.movementObserved
         if !likelyWindowDrag {
             onDebugStatusChange(session.target == nil ? AppStrings.dragStartedWindowNotLocked : AppStrings.dragStartedButNoWindowMovement)
             self.session = session
@@ -592,6 +592,7 @@ final class WindowDragLayoutService {
         guard CFEqual(element, target.window) else { return }
         guard notification == kAXMovedNotification as String || notification == kAXResizedNotification as String else { return }
         self.session?.movementObserved = true
+        self.session?.movementEvidenceCount = 2
         onDebugStatusChange(AppStrings.windowMovedNotificationReceived)
     }
 
