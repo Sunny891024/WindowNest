@@ -165,28 +165,31 @@ struct DragLayoutOverlayView: View {
         size: CGSize
     ) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .stroke(Color(red: 0.72, green: 0.85, blue: 1.0).opacity(0.45), lineWidth: 1.5)
 
-            if primaryAxis == .horizontal {
-                HStack(spacing: 0) {
-                    splitSegment(highlighted: highlightFirst)
-                    splitSegment(highlighted: highlightSecond)
-                }
-            } else {
-                VStack(spacing: 0) {
-                    splitSegment(highlighted: highlightFirst)
-                    splitSegment(highlighted: highlightSecond)
+            Group {
+                if primaryAxis == .horizontal {
+                    HStack(spacing: 0) {
+                        splitSegment(highlighted: highlightFirst)
+                        splitSegment(highlighted: highlightSecond)
+                    }
+                } else {
+                    VStack(spacing: 0) {
+                        splitSegment(highlighted: highlightFirst)
+                        splitSegment(highlighted: highlightSecond)
+                    }
                 }
             }
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
 
     private func splitSegment(highlighted: Bool) -> some View {
-        Rectangle()
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
             .fill(previewFill(highlighted))
             .overlay(
-                Rectangle()
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(previewStroke(highlighted), lineWidth: highlighted ? 2.5 : 1)
             )
     }

@@ -34,6 +34,7 @@ final class WindowDragLayoutService {
     private var lastBeginAttemptAt = Date.distantPast
     private var healthCheckTimer: Timer?
     private var workspaceObservers: [NSObjectProtocol] = []
+    private var pendingRecoveryWorkItems: [DispatchWorkItem] = []
 
     init(
         onStatusMessage: @escaping (String) -> Void,
@@ -181,6 +182,7 @@ final class WindowDragLayoutService {
         cancelSession()
         stopInputMonitoring()
         lastMouseDownState = false
+        lastBeginAttemptAt = .distantPast
         startInputMonitoring()
 
         if let debugMessage {
@@ -199,6 +201,7 @@ final class WindowDragLayoutService {
         let center = NSWorkspace.shared.notificationCenter
 
         let notifications: [Notification.Name] = [
+            NSWorkspace.willSleepNotification,
             NSWorkspace.didWakeNotification,
             NSWorkspace.screensDidWakeNotification,
             NSWorkspace.sessionDidBecomeActiveNotification
@@ -207,7 +210,11 @@ final class WindowDragLayoutService {
         workspaceObservers = notifications.map { name in
             center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
                 Task { @MainActor in
-                    self?.handleSystemWake()
+                    if name == NSWorkspace.willSleepNotification {
+                        self?.handleSystemSleep()
+                    } else {
+                        self?.handleSystemWake()
+                    }
                 }
             }
         }
@@ -237,20 +244,56 @@ final class WindowDragLayoutService {
     private func performListenerHealthCheck() {
         guard session == nil else { return }
 
-        let needsRecovery =
-            eventTap == nil ||
-            eventTapRunLoopSource == nil ||
-            pollingTimer?.isValid != true ||
-            globalMonitors.count < 3 ||
-            (eventTap.map { !CGEvent.tapIsEnabled(tap: $0) } ?? true)
-
-        guard needsRecovery else { return }
+        guard needsListenerRecovery() else { return }
         restartInputMonitoring(debugMessage: AppStrings.listenerHealthCheckRecovered)
     }
 
     private func handleSystemWake() {
         onDebugStatusChange(AppStrings.wakeRecoveryStarted)
-        restartInputMonitoring(debugMessage: AppStrings.eventTapRecovered)
+        scheduleWakeRecoveryAttempts()
+    }
+
+    private func handleSystemSleep() {
+        cancelPendingRecovery()
+        cancelSession()
+        stopInputMonitoring()
+        lastMouseDownState = false
+        lastBeginAttemptAt = .distantPast
+        onDebugStatusChange(AppStrings.systemSleepDetected)
+    }
+
+    private func scheduleWakeRecoveryAttempts() {
+        cancelPendingRecovery()
+
+        let delays: [TimeInterval] = [0.0, 0.8, 2.5]
+        for (index, delay) in delays.enumerated() {
+            let workItem = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                guard self.session == nil else { return }
+
+                if index == 0 || self.needsListenerRecovery() {
+                    self.restartInputMonitoring(debugMessage: index == 0 ? AppStrings.eventTapRecovered : AppStrings.listenerHealthCheckRecovered)
+                }
+            }
+
+            pendingRecoveryWorkItems.append(workItem)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+        }
+    }
+
+    private func cancelPendingRecovery() {
+        for workItem in pendingRecoveryWorkItems {
+            workItem.cancel()
+        }
+        pendingRecoveryWorkItems.removeAll()
+    }
+
+    private func needsListenerRecovery() -> Bool {
+        eventTap == nil ||
+        eventTapRunLoopSource == nil ||
+        pollingTimer?.isValid != true ||
+        globalMonitors.count < 3 ||
+        (eventTap.map { !CGEvent.tapIsEnabled(tap: $0) } ?? true)
     }
 
     private func pollDragFallback() {

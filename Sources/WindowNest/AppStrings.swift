@@ -145,6 +145,7 @@ enum AppStrings {
     static var eventTapCreationFailed: String { value(en: "Failed to start event listener", zhHans: "事件监听创建失败", zhHant: "事件監聽建立失敗") }
     static var eventTapStarted: String { value(en: "Event listener started", zhHans: "事件监听已启动", zhHant: "事件監聽已啟動") }
     static var eventTapRecovered: String { value(en: "Event listener recovered", zhHans: "事件监听已恢复", zhHant: "事件監聽已恢復") }
+    static var systemSleepDetected: String { value(en: "System sleep detected, pausing listeners", zhHans: "检测到系统休眠，已暂停监听", zhHant: "偵測到系統休眠，已暫停監聽") }
     static var wakeRecoveryStarted: String { value(en: "System wake detected, refreshing listeners", zhHans: "检测到系统唤醒，正在刷新监听", zhHant: "偵測到系統喚醒，正在刷新監聽") }
     static var listenerHealthCheckRecovered: String { value(en: "Listener health check recovered the drag service", zhHans: "监听自检已恢复拖动服务", zhHant: "監聽自檢已恢復拖動服務") }
     static var noDraggableWindowRegionHit: String { value(en: "Did not hit a draggable window region", zhHans: "未命中可拖动窗口区域", zhHant: "未命中可拖動視窗區域") }
