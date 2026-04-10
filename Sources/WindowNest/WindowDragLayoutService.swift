@@ -34,6 +34,7 @@ final class WindowDragLayoutService {
     private var lastBeginAttemptAt = Date.distantPast
     private var healthCheckTimer: Timer?
     private var workspaceObservers: [NSObjectProtocol] = []
+    private var applicationObservers: [NSObjectProtocol] = []
     private var pendingRecoveryWorkItems: [DispatchWorkItem] = []
 
     init(
@@ -179,6 +180,7 @@ final class WindowDragLayoutService {
     }
 
     private func restartInputMonitoring(debugMessage: String? = nil) {
+        cancelPendingRecovery()
         cancelSession()
         stopInputMonitoring()
         lastMouseDownState = false
@@ -218,6 +220,24 @@ final class WindowDragLayoutService {
                 }
             }
         }
+
+        let applicationCenter = NotificationCenter.default
+        let applicationNotifications: [Notification.Name] = [
+            NSApplication.willBecomeActiveNotification,
+            NSApplication.didBecomeActiveNotification
+        ]
+
+        applicationObservers = applicationNotifications.map { name in
+            applicationCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    if name == NSApplication.didBecomeActiveNotification {
+                        self?.handleSystemWake()
+                    } else {
+                        self?.onDebugStatusChange(AppStrings.wakeRecoveryStarted)
+                    }
+                }
+            }
+        }
     }
 
     private func removeSystemLifecycleObservers() {
@@ -226,6 +246,12 @@ final class WindowDragLayoutService {
             center.removeObserver(observer)
         }
         workspaceObservers.removeAll()
+
+        let applicationCenter = NotificationCenter.default
+        for observer in applicationObservers {
+            applicationCenter.removeObserver(observer)
+        }
+        applicationObservers.removeAll()
     }
 
     private func startHealthCheckTimer() {
@@ -265,15 +291,12 @@ final class WindowDragLayoutService {
     private func scheduleWakeRecoveryAttempts() {
         cancelPendingRecovery()
 
-        let delays: [TimeInterval] = [0.0, 0.8, 2.5]
-        for (index, delay) in delays.enumerated() {
+        let delays: [TimeInterval] = [0.0, 1.0, 4.0]
+        for delay in delays {
             let workItem = DispatchWorkItem { [weak self] in
                 guard let self else { return }
                 guard self.session == nil else { return }
-
-                if index == 0 || self.needsListenerRecovery() {
-                    self.restartInputMonitoring(debugMessage: index == 0 ? AppStrings.eventTapRecovered : AppStrings.listenerHealthCheckRecovered)
-                }
+                self.restartInputMonitoring(debugMessage: AppStrings.eventTapRecovered)
             }
 
             pendingRecoveryWorkItems.append(workItem)
