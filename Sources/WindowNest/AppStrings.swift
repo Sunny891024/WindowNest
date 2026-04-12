@@ -36,6 +36,28 @@ enum AppStrings {
     static var grantAccess: String { value(en: "Grant Access", zhHans: "请求授权", zhHant: "要求授權") }
     static var openSettings: String { value(en: "Open Settings", zhHans: "打开设置", zhHant: "打開設定") }
     static var recheckAccess: String { value(en: "Check Again", zhHans: "重新检查", zhHant: "重新檢查") }
+    static var debugMode: String { value(en: "Debug Mode", zhHans: "调试模式", zhHant: "除錯模式") }
+    static var debugModeOn: String { value(en: "On", zhHans: "开启", zhHant: "開啟") }
+    static var debugModeOff: String { value(en: "Off", zhHans: "关闭", zhHant: "關閉") }
+    static var debugReportTitle: String { value(en: "Diagnostics", zhHans: "诊断信息", zhHant: "診斷資訊") }
+    static var debugReportHint: String {
+        value(
+            en: "Enable this to inspect listener state, recent events, and recovery attempts.",
+            zhHans: "开启后可查看监听状态、最近事件和恢复记录。",
+            zhHant: "開啟後可查看監聽狀態、最近事件與恢復記錄。"
+        )
+    }
+    static var copyDebugReport: String { value(en: "Copy Report", zhHans: "复制报告", zhHant: "複製報告") }
+    static var refreshDebugReport: String { value(en: "Refresh", zhHans: "刷新", zhHant: "重新整理") }
+    static var recentEventsTitle: String { value(en: "Recent Events", zhHans: "最近事件", zhHant: "最近事件") }
+    static var debugSnapshotUnavailable: String { value(en: "Diagnostics are not available yet.", zhHans: "诊断信息暂不可用。", zhHant: "診斷資訊暫不可用。") }
+    static var debugSummaryTitle: String { value(en: "Status", zhHans: "状态", zhHant: "狀態") }
+    static var debugCurrentStatusTitle: String { value(en: "Current Status", zhHans: "当前状态", zhHant: "目前狀態") }
+    static var debugListenerTitle: String { value(en: "Listeners", zhHans: "监听", zhHant: "監聽") }
+    static var debugMonitorTitle: String { value(en: "Monitors", zhHans: "监视器", zhHant: "監視器") }
+    static var debugRecoveryTitle: String { value(en: "Recovery", zhHans: "恢复", zhHant: "恢復") }
+    static var debugSessionTitle: String { value(en: "Session", zhHans: "会话", zhHant: "工作階段") }
+    static var debugInputTitle: String { value(en: "Input", zhHans: "输入", zhHant: "輸入") }
 
     static var guideTitle: String { value(en: "Drag a window to show layout targets", zhHans: "拖动窗口即可呼出布局板", zhHant: "拖動視窗即可呼出版面板") }
     static var guideDescription: String {
@@ -154,6 +176,7 @@ enum AppStrings {
     static var dragCapturedWindow: String { value(en: "Window captured during drag", zhHans: "拖动中已补抓目标窗口", zhHant: "拖動中已補抓目標視窗") }
     static var dragStartedWindowNotLocked: String { value(en: "Drag started, but the window is still not locked", zhHans: "拖动已开始，但仍未锁定窗口", zhHant: "拖動已開始，但仍未鎖定視窗") }
     static var dragStartedButNoWindowMovement: String { value(en: "Drag started, but no window movement was detected", zhHans: "拖动已开始，但还未识别为窗口移动", zhHant: "拖動已開始，但尚未識別為視窗移動") }
+    static var dragMovementConfirmed: String { value(en: "Window drag confirmed by pointer movement", zhHans: "已通过鼠标移动确认窗口拖动", zhHant: "已透過滑鼠移動確認視窗拖動") }
     static func overlayShowing(_ title: String?) -> String {
         if let title {
             return value(

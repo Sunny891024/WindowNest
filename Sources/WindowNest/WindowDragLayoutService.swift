@@ -2,12 +2,39 @@ import AppKit
 import ApplicationServices
 import Foundation
 
+struct WindowDragDebugSnapshot {
+    let eventTapActive: Bool
+    let eventTapRunLoopSourceActive: Bool
+    let pollingTimerActive: Bool
+    let globalMonitorCount: Int
+    let workspaceObserverCount: Int
+    let applicationObserverCount: Int
+    let pendingRecoveryCount: Int
+    let healthCheckTimerActive: Bool
+    let observerActive: Bool
+    let sessionActive: Bool
+    let overlayVisible: Bool
+    let targetLocked: Bool
+    let movementObserved: Bool
+    let movementEvidenceCount: Int
+    let startedInDragRegion: Bool?
+    let lastMouseDownState: Bool
+    let lastBeginAttemptAgo: TimeInterval?
+    let currentScreenName: String?
+    let listenerStartCount: Int
+    let listenerRestartCount: Int
+    let sleepEventCount: Int
+    let wakeEventCount: Int
+    let healthRecoveryCount: Int
+}
+
 @MainActor
 final class WindowDragLayoutService {
     private struct DragSession {
         var target: ManagedWindowTarget?
         let hintAppPID: pid_t?
         let initialMouseLocation: CGPoint
+        let startedAt: Date
         var initialFrame: CGRect?
         let startedInDragRegion: Bool
         var overlayShown = false
@@ -36,6 +63,11 @@ final class WindowDragLayoutService {
     private var workspaceObservers: [NSObjectProtocol] = []
     private var applicationObservers: [NSObjectProtocol] = []
     private var pendingRecoveryWorkItems: [DispatchWorkItem] = []
+    private var listenerStartCount = 0
+    private var listenerRestartCount = 0
+    private var sleepEventCount = 0
+    private var wakeEventCount = 0
+    private var healthRecoveryCount = 0
 
     init(
         onStatusMessage: @escaping (String) -> Void,
@@ -157,6 +189,7 @@ final class WindowDragLayoutService {
     }
 
     private func startInputMonitoring() {
+        listenerStartCount += 1
         startEventTap()
         startGlobalMonitors()
         startPollingFallback()
@@ -185,6 +218,7 @@ final class WindowDragLayoutService {
         stopInputMonitoring()
         lastMouseDownState = false
         lastBeginAttemptAt = .distantPast
+        listenerRestartCount += 1
         startInputMonitoring()
 
         if let debugMessage {
@@ -271,15 +305,18 @@ final class WindowDragLayoutService {
         guard session == nil else { return }
 
         guard needsListenerRecovery() else { return }
+        healthRecoveryCount += 1
         restartInputMonitoring(debugMessage: AppStrings.listenerHealthCheckRecovered)
     }
 
     private func handleSystemWake() {
+        wakeEventCount += 1
         onDebugStatusChange(AppStrings.wakeRecoveryStarted)
         scheduleWakeRecoveryAttempts()
     }
 
     private func handleSystemSleep() {
+        sleepEventCount += 1
         cancelPendingRecovery()
         cancelSession()
         stopInputMonitoring()
@@ -395,6 +432,7 @@ final class WindowDragLayoutService {
             target: target,
             hintAppPID: target?.appPID ?? initialHint?.appPID,
             initialMouseLocation: mouseLocation,
+            startedAt: now,
             initialFrame: referenceFrame,
             startedInDragRegion: startedInDragRegion
         )
@@ -413,6 +451,7 @@ final class WindowDragLayoutService {
         let currentLocation = NSEvent.mouseLocation
         let distance = hypot(currentLocation.x - session.initialMouseLocation.x, currentLocation.y - session.initialMouseLocation.y)
         guard distance > 16 else { return }
+        let elapsed = Date().timeIntervalSince(session.startedAt)
 
         if session.target == nil {
             let lateTarget =
@@ -444,7 +483,13 @@ final class WindowDragLayoutService {
                     session.movementObserved = true
                 }
             } else {
-                session.movementEvidenceCount = 0
+                if shouldConfirmDragMovement(distance: distance, elapsed: elapsed, session: session) {
+                    session.movementObserved = true
+                    session.movementEvidenceCount = max(session.movementEvidenceCount, 2)
+                    onDebugStatusChange(AppStrings.dragMovementConfirmed)
+                } else {
+                    session.movementEvidenceCount = 0
+                }
             }
         }
 
@@ -475,7 +520,12 @@ final class WindowDragLayoutService {
     }
 
     private func finishPotentialDrag() {
-        guard let session, session.overlayShown, let screen = session.screen else {
+        guard let session else {
+            return
+        }
+
+        guard session.overlayShown, let screen = session.screen else {
+            cancelSession()
             return
         }
 
@@ -555,6 +605,22 @@ final class WindowDragLayoutService {
         let originDelta = hypot(currentFrame.origin.x - initialFrame.origin.x, currentFrame.origin.y - initialFrame.origin.y)
         let sizeDelta = abs(currentFrame.width - initialFrame.width) + abs(currentFrame.height - initialFrame.height)
         return originDelta > 10 || sizeDelta > 10
+    }
+
+    private func shouldConfirmDragMovement(distance: CGFloat, elapsed: TimeInterval, session: DragSession) -> Bool {
+        guard session.startedInDragRegion, session.target != nil else {
+            return false
+        }
+
+        if elapsed >= 0.15 && distance >= 22 {
+            return true
+        }
+
+        if elapsed >= 0.35 && distance >= 16 {
+            return true
+        }
+
+        return false
     }
 
     private func resolveDragTarget(at location: CGPoint) -> ManagedWindowTarget? {
@@ -685,5 +751,33 @@ final class WindowDragLayoutService {
         removeObserver()
         session = nil
         onDebugStatusChange(AppStrings.waitingDrag)
+    }
+
+    func debugSnapshot() -> WindowDragDebugSnapshot {
+        WindowDragDebugSnapshot(
+            eventTapActive: eventTap.map { CFMachPortIsValid($0) } ?? false,
+            eventTapRunLoopSourceActive: eventTapRunLoopSource != nil,
+            pollingTimerActive: pollingTimer?.isValid == true,
+            globalMonitorCount: globalMonitors.count,
+            workspaceObserverCount: workspaceObservers.count,
+            applicationObserverCount: applicationObservers.count,
+            pendingRecoveryCount: pendingRecoveryWorkItems.filter { !$0.isCancelled }.count,
+            healthCheckTimerActive: healthCheckTimer?.isValid == true,
+            observerActive: observer != nil,
+            sessionActive: session != nil,
+            overlayVisible: overlayController != nil,
+            targetLocked: session?.target != nil,
+            movementObserved: session?.movementObserved == true,
+            movementEvidenceCount: session?.movementEvidenceCount ?? 0,
+            startedInDragRegion: session?.startedInDragRegion,
+            lastMouseDownState: lastMouseDownState,
+            lastBeginAttemptAgo: lastBeginAttemptAt == .distantPast ? nil : Date().timeIntervalSince(lastBeginAttemptAt),
+            currentScreenName: session?.screen?.localizedName,
+            listenerStartCount: listenerStartCount,
+            listenerRestartCount: listenerRestartCount,
+            sleepEventCount: sleepEventCount,
+            wakeEventCount: wakeEventCount,
+            healthRecoveryCount: healthRecoveryCount
+        )
     }
 }

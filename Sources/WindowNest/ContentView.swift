@@ -4,15 +4,17 @@ struct ContentView: View {
     @EnvironmentObject private var model: WindowNestModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            headerRow
-            accessCard
-            dragGuideCard
-            quickActionsSection
-            footerRow
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: 16) {
+                headerRow
+                accessCard
+                dragGuideCard
+                quickActionsSection
+                footerRow
+            }
+            .padding(16)
         }
-        .padding(16)
-        .frame(width: 368)
+        .frame(width: 368, height: 328)
         .onAppear {
             model.refreshPermissions()
         }

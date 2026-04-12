@@ -38,6 +38,14 @@ struct WindowManager {
         static let toolbar = "AXToolbar"
         static let window = "AXWindow"
         static let group = "AXGroup"
+        static let button = "AXButton"
+        static let webArea = "AXWebArea"
+        static let textArea = "AXTextArea"
+        static let textField = "AXTextField"
+        static let scrollArea = "AXScrollArea"
+        static let table = "AXTable"
+        static let list = "AXList"
+        static let outline = "AXOutline"
     }
 
     func hasResolvableWindowTarget() -> Bool {
@@ -111,6 +119,10 @@ struct WindowManager {
     }
 
     func dragStartProbe(at point: CGPoint) -> DragStartProbeResult {
+        if isPointInsideOwnWindow(at: point) {
+            return .blocked
+        }
+
         guard let element = elementAtScreenPoint(point) else {
             return .unavailable
         }
@@ -127,17 +139,22 @@ struct WindowManager {
 
         let roles = roleChain(from: element)
         let target = ManagedWindowTarget(appPID: pid, window: window, frame: frame)
+        let isContentRoleHit = roles.contains(where: Self.isContentRole)
 
         if roles.contains(AXRoleName.titleBar) || roles.contains(AXRoleName.toolbar) {
             return .allowed(target)
         }
 
-        let neutralRoles: Set<String> = [
-            AXRoleName.window,
-            AXRoleName.group
-        ]
+        if strictTitlebarRegion(for: frame).contains(point) && !isContentRoleHit {
+            return .allowed(target)
+        }
 
-        if strictTitlebarRegion(for: frame).contains(point) && roles.allSatisfy({ neutralRoles.contains($0) }) {
+        if
+            let hint = windowHint(at: point),
+            hint.appPID == pid,
+            strictTitlebarRegion(for: hint.frame).contains(point),
+            !isContentRoleHit
+        {
             return .allowed(target)
         }
 
@@ -508,6 +525,45 @@ struct WindowManager {
             width: frame.width,
             height: min(48, frame.height)
         )
+    }
+
+    private func isPointInsideOwnWindow(at point: CGPoint) -> Bool {
+        guard
+            let infoList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
+        else {
+            return false
+        }
+
+        for info in infoList {
+            guard
+                let ownerPID = info[kCGWindowOwnerPID as String] as? pid_t,
+                ownerPID == ProcessInfo.processInfo.processIdentifier,
+                let boundsValue = info[kCGWindowBounds as String] as? NSDictionary,
+                let rawBounds = CGRect(dictionaryRepresentation: boundsValue)
+            else {
+                continue
+            }
+
+            for candidateFrame in normalizedWindowListFrames(for: rawBounds, around: point) {
+                if candidateFrame.contains(point) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    private static func isContentRole(_ role: String) -> Bool {
+        [
+            AXRoleName.webArea,
+            AXRoleName.textArea,
+            AXRoleName.textField,
+            AXRoleName.scrollArea,
+            AXRoleName.table,
+            AXRoleName.list,
+            AXRoleName.outline
+        ].contains(role)
     }
 
     func screenContaining(_ point: CGPoint) -> NSScreen? {
