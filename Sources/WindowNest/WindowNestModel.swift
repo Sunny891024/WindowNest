@@ -22,7 +22,7 @@ final class WindowNestModel: ObservableObject {
     @Published private(set) var windowControlLabel = AppStrings.windowControlLabel(accessibilityGranted: false, ready: false)
 
     let layouts: [WindowLayoutPreset] = [.leftHalf, .rightHalf, .topHalf, .bottomHalf, .maximize]
-    let version = "0.4.14"
+    let version = "0.4.16"
 
     private static let debugModeDefaultsKey = "WindowNestDebugMode"
     private static let debugLogLimit = 20

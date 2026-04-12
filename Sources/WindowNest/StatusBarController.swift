@@ -2,20 +2,56 @@ import AppKit
 import SwiftUI
 
 @MainActor
+final class SizingHostingController<Content: View>: NSHostingController<Content> {
+    var onSizeChange: ((NSSize) -> Void)?
+    private var lastReportedSize = NSSize.zero
+
+    override func viewDidLayout() {
+        super.viewDidLayout()
+
+        let fittingSize = view.fittingSize
+        guard fittingSize.width > 0, fittingSize.height > 0 else {
+            return
+        }
+
+        guard
+            abs(fittingSize.width - lastReportedSize.width) > 0.5 ||
+            abs(fittingSize.height - lastReportedSize.height) > 0.5
+        else {
+            return
+        }
+
+        lastReportedSize = fittingSize
+        onSizeChange?(fittingSize)
+    }
+}
+
+@MainActor
 final class StatusBarController {
     private let statusItem: NSStatusItem
     private let popover: NSPopover
+    private let hostingController: SizingHostingController<AnyView>
     private var eventMonitor: Any?
 
     init(model: WindowNestModel) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         popover = NSPopover()
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 368, height: 328)
-        popover.contentViewController = NSHostingController(
-            rootView: ContentView()
-                .environmentObject(model)
+        popover.contentSize = NSSize(width: ContentView.preferredPopoverWidth, height: 420)
+
+        hostingController = SizingHostingController(
+            rootView: AnyView(
+                ContentView()
+                    .environmentObject(model)
+            )
         )
+        hostingController.onSizeChange = { [weak self] size in
+            self?.updatePopoverContentSize(size)
+        }
+        popover.contentViewController = hostingController
+        DispatchQueue.main.async { [weak self] in
+            self?.updatePopoverContentSize(self?.hostingController.view.fittingSize)
+        }
 
         if let button = statusItem.button {
             button.image = makeStatusBarImage()
@@ -47,6 +83,20 @@ final class StatusBarController {
         } else {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+            DispatchQueue.main.async { [weak self] in
+                self?.updatePopoverContentSize(self?.hostingController.view.fittingSize)
+            }
+        }
+    }
+
+    private func updatePopoverContentSize(_ size: NSSize? = nil) {
+        let targetSize = size ?? hostingController.view.fittingSize
+        guard targetSize.width > 0, targetSize.height > 0 else {
+            return
+        }
+
+        if abs(popover.contentSize.width - targetSize.width) > 0.5 || abs(popover.contentSize.height - targetSize.height) > 0.5 {
+            popover.contentSize = targetSize
         }
     }
 

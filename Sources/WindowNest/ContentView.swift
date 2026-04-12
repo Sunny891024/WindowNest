@@ -3,26 +3,36 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var model: WindowNestModel
 
-    var body: some View {
-        ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 16) {
-                headerRow
-                accessCard
-                dragGuideCard
-                quickActionsSection
-                footerRow
-            }
-            .padding(16)
+    static var preferredPopoverWidth: CGFloat {
+        switch AppLanguage.current {
+        case .english:
+            return 368
+        case .simplifiedChinese:
+            return 384
+        case .traditionalChinese:
+            return 396
         }
-        .frame(width: 368, height: 328)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            headerRow
+            accessCard
+            dragGuideCard
+            quickActionsSection
+            footerRow
+        }
+        .padding(12)
+        .frame(width: Self.preferredPopoverWidth, alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
         .onAppear {
             model.refreshPermissions()
         }
     }
 
     private var headerRow: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(AppStrings.appName)
                     .font(.system(size: 20, weight: .semibold))
 
@@ -45,7 +55,7 @@ struct ContentView: View {
     }
 
     private var accessCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(model.statusMessage)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -92,7 +102,7 @@ struct ContentView: View {
     }
 
     private var dragGuideCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Label(AppStrings.guideTitle, systemImage: "rectangle.on.rectangle")
                 .font(.headline)
 
@@ -111,7 +121,7 @@ struct ContentView: View {
     }
 
     private var quickActionsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(AppStrings.quickActionsTitle)
                 .font(.subheadline.weight(.semibold))
 
@@ -147,7 +157,7 @@ struct ContentView: View {
     private func miniTile(title: String) -> some View {
         Text(title)
             .font(.caption.weight(.semibold))
-            .frame(maxWidth: .infinity, minHeight: 42)
+            .frame(maxWidth: .infinity, minHeight: 40)
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.primary.opacity(0.06))
