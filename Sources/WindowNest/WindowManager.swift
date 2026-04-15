@@ -27,8 +27,8 @@ enum WindowManagerError: LocalizedError {
 }
 
 enum DragStartProbeResult {
-    case allowed(ManagedWindowTarget)
-    case blocked
+    case allowed(ManagedWindowTarget, roles: [String])
+    case blocked(roles: [String])
     case unavailable
 }
 
@@ -42,6 +42,8 @@ struct WindowManager {
         static let webArea = "AXWebArea"
         static let textArea = "AXTextArea"
         static let textField = "AXTextField"
+        static let textView = "AXTextView"
+        static let searchField = "AXSearchField"
         static let scrollArea = "AXScrollArea"
         static let table = "AXTable"
         static let list = "AXList"
@@ -120,7 +122,7 @@ struct WindowManager {
 
     func dragStartProbe(at point: CGPoint) -> DragStartProbeResult {
         if isPointInsideOwnWindow(at: point) {
-            return .blocked
+            return .blocked(roles: [])
         }
 
         guard let element = elementAtScreenPoint(point) else {
@@ -134,7 +136,7 @@ struct WindowManager {
         var pid: pid_t = 0
         AXUIElementGetPid(window, &pid)
         guard pid != ProcessInfo.processInfo.processIdentifier else {
-            return .blocked
+            return .blocked(roles: [])
         }
 
         let roles = roleChain(from: element)
@@ -142,11 +144,11 @@ struct WindowManager {
         let isContentRoleHit = roles.contains(where: Self.isContentRole)
 
         if roles.contains(AXRoleName.titleBar) || roles.contains(AXRoleName.toolbar) {
-            return .allowed(target)
+            return .allowed(target, roles: roles)
         }
 
         if strictTitlebarRegion(for: frame).contains(point) && !isContentRoleHit {
-            return .allowed(target)
+            return .allowed(target, roles: roles)
         }
 
         if
@@ -155,10 +157,10 @@ struct WindowManager {
             strictTitlebarRegion(for: hint.frame).contains(point),
             !isContentRoleHit
         {
-            return .allowed(target)
+            return .allowed(target, roles: roles)
         }
 
-        return .blocked
+        return .blocked(roles: roles)
     }
 
     func targetNearScreenPoint(_ point: CGPoint) -> ManagedWindowTarget? {
@@ -521,9 +523,9 @@ struct WindowManager {
     private func strictTitlebarRegion(for frame: CGRect) -> CGRect {
         CGRect(
             x: frame.minX,
-            y: max(frame.maxY - 48, frame.minY),
+            y: max(frame.maxY - 32, frame.minY),
             width: frame.width,
-            height: min(48, frame.height)
+            height: min(32, frame.height)
         )
     }
 
@@ -559,6 +561,8 @@ struct WindowManager {
             AXRoleName.webArea,
             AXRoleName.textArea,
             AXRoleName.textField,
+            AXRoleName.textView,
+            AXRoleName.searchField,
             AXRoleName.scrollArea,
             AXRoleName.table,
             AXRoleName.list,

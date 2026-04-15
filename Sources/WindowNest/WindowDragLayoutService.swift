@@ -2,32 +2,6 @@ import AppKit
 import ApplicationServices
 import Foundation
 
-struct WindowDragDebugSnapshot {
-    let eventTapActive: Bool
-    let eventTapRunLoopSourceActive: Bool
-    let pollingTimerActive: Bool
-    let globalMonitorCount: Int
-    let workspaceObserverCount: Int
-    let applicationObserverCount: Int
-    let pendingRecoveryCount: Int
-    let healthCheckTimerActive: Bool
-    let observerActive: Bool
-    let sessionActive: Bool
-    let overlayVisible: Bool
-    let targetLocked: Bool
-    let movementObserved: Bool
-    let movementEvidenceCount: Int
-    let startedInDragRegion: Bool?
-    let lastMouseDownState: Bool
-    let lastBeginAttemptAgo: TimeInterval?
-    let currentScreenName: String?
-    let listenerStartCount: Int
-    let listenerRestartCount: Int
-    let sleepEventCount: Int
-    let wakeEventCount: Int
-    let healthRecoveryCount: Int
-}
-
 @MainActor
 final class WindowDragLayoutService {
     private struct DragSession {
@@ -56,7 +30,6 @@ final class WindowDragLayoutService {
     private var observer: AXObserver?
     private var observerRunLoopSource: CFRunLoopSource?
     private var observedWindow: AXUIElement?
-    private var testOverlayTimer: Timer?
     private var globalMonitors: [Any] = []
     private var lastBeginAttemptAt = Date.distantPast
     private var healthCheckTimer: Timer?
@@ -88,27 +61,6 @@ final class WindowDragLayoutService {
 
         if session == nil {
             onDebugStatusChange(AppStrings.waitingDrag)
-        }
-    }
-
-    func showTestOverlay() {
-        guard let screen = NSScreen.main else {
-            onDebugStatusChange(AppStrings.noAvailableScreen)
-            return
-        }
-
-        overlayController?.hide()
-        overlayController = DragLayoutOverlayController(screen: screen)
-        overlayController?.show(on: screen, hoveredTarget: nil)
-        onDebugStatusChange(AppStrings.overlayShowing(nil))
-
-        testOverlayTimer?.invalidate()
-        testOverlayTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                self?.overlayController?.hide()
-                self?.overlayController = nil
-                self?.onDebugStatusChange(AppStrings.waitingDrag)
-            }
         }
     }
 
@@ -405,21 +357,25 @@ final class WindowDragLayoutService {
         let target: ManagedWindowTarget?
         let referenceFrame: CGRect?
         let startedInDragRegion: Bool
+        let probeSummary: String
 
         switch dragStartProbe {
-        case .allowed(let resolvedTarget):
+        case .allowed(let resolvedTarget, let roles):
             target = resolvedTarget
             referenceFrame = resolvedTarget.frame
             startedInDragRegion = true
-        case .blocked:
+            probeSummary = "allowed roles=\(describeRoles(roles))"
+        case .blocked(let roles):
+            onDebugStatusChange("Drag start probe: blocked roles=\(describeRoles(roles))")
             cancelSession()
             onDebugStatusChange(AppStrings.noDraggableWindowRegionHit)
             return
         case .unavailable:
-            let fallbackTarget = resolveDragTarget(at: mouseLocation) ?? fallbackFocusedTarget(near: mouseLocation)
+            let fallbackTarget = fallbackFocusedTarget(near: mouseLocation)
             target = fallbackTarget
             referenceFrame = fallbackTarget?.frame ?? initialHint?.frame
-            startedInDragRegion = referenceFrame.map { isLikelyDragStart(location: mouseLocation, for: $0) } ?? false
+            startedInDragRegion = fallbackTarget.map { isLikelyDragStart(location: mouseLocation, for: $0.frame) } ?? false
+            probeSummary = fallbackTarget == nil ? "unavailable" : "unavailable:fallback"
         }
 
         guard startedInDragRegion else {
@@ -427,6 +383,10 @@ final class WindowDragLayoutService {
             onDebugStatusChange(AppStrings.noDraggableWindowRegionHit)
             return
         }
+
+        onDebugStatusChange(
+            "Drag start probe: \(probeSummary), target=\(target.map { "\($0.appPID)" } ?? "nil"), frame=\(referenceFrame.map { describe($0) } ?? "nil")"
+        )
 
         session = DragSession(
             target: target,
@@ -669,9 +629,9 @@ final class WindowDragLayoutService {
             return nil
         }
 
-        let expandedDragRegion = draggableRegion(for: focusedTarget.frame).insetBy(dx: -18, dy: -10)
+        let strictRegion = draggableRegion(for: focusedTarget.frame)
 
-        guard expandedDragRegion.contains(location) else {
+        guard strictRegion.contains(location) else {
             return nil
         }
 
@@ -685,9 +645,9 @@ final class WindowDragLayoutService {
     private func draggableRegion(for frame: CGRect) -> CGRect {
         CGRect(
             x: frame.minX,
-            y: max(frame.maxY - 56, frame.minY),
+            y: max(frame.maxY - 32, frame.minY),
             width: frame.width,
-            height: min(56, frame.height)
+            height: min(32, frame.height)
         )
     }
 
@@ -753,31 +713,21 @@ final class WindowDragLayoutService {
         onDebugStatusChange(AppStrings.waitingDrag)
     }
 
-    func debugSnapshot() -> WindowDragDebugSnapshot {
-        WindowDragDebugSnapshot(
-            eventTapActive: eventTap.map { CFMachPortIsValid($0) } ?? false,
-            eventTapRunLoopSourceActive: eventTapRunLoopSource != nil,
-            pollingTimerActive: pollingTimer?.isValid == true,
-            globalMonitorCount: globalMonitors.count,
-            workspaceObserverCount: workspaceObservers.count,
-            applicationObserverCount: applicationObservers.count,
-            pendingRecoveryCount: pendingRecoveryWorkItems.filter { !$0.isCancelled }.count,
-            healthCheckTimerActive: healthCheckTimer?.isValid == true,
-            observerActive: observer != nil,
-            sessionActive: session != nil,
-            overlayVisible: overlayController != nil,
-            targetLocked: session?.target != nil,
-            movementObserved: session?.movementObserved == true,
-            movementEvidenceCount: session?.movementEvidenceCount ?? 0,
-            startedInDragRegion: session?.startedInDragRegion,
-            lastMouseDownState: lastMouseDownState,
-            lastBeginAttemptAgo: lastBeginAttemptAt == .distantPast ? nil : Date().timeIntervalSince(lastBeginAttemptAt),
-            currentScreenName: session?.screen?.localizedName,
-            listenerStartCount: listenerStartCount,
-            listenerRestartCount: listenerRestartCount,
-            sleepEventCount: sleepEventCount,
-            wakeEventCount: wakeEventCount,
-            healthRecoveryCount: healthRecoveryCount
+    private func describe(_ frame: CGRect) -> String {
+        String(
+            format: "x=%.0f y=%.0f w=%.0f h=%.0f",
+            frame.origin.x,
+            frame.origin.y,
+            frame.size.width,
+            frame.size.height
         )
+    }
+
+    private func describeRoles(_ roles: [String]) -> String {
+        if roles.isEmpty {
+            return "[]"
+        }
+
+        return "[\(roles.joined(separator: " > "))]"
     }
 }
