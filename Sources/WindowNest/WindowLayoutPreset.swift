@@ -60,6 +60,21 @@ enum WindowLayoutPreset: String, CaseIterable, Identifiable {
         }
     }
 
+    var symbolName: String {
+        switch self {
+        case .maximize: return "arrow.up.left.and.arrow.down.right"
+        case .leftHalf: return "rectangle.split.2x1"
+        case .rightHalf: return "rectangle.split.2x1"
+        case .topHalf: return "rectangle.split.1x2"
+        case .bottomHalf: return "rectangle.split.1x2"
+        case .topLeft: return "arrow.up.left"
+        case .topRight: return "arrow.up.right"
+        case .bottomLeft: return "arrow.down.left"
+        case .bottomRight: return "arrow.down.right"
+        case .centerLarge: return "square.centered"
+        }
+    }
+
     func frame(in visibleFrame: CGRect) -> CGRect {
         let halfWidth = visibleFrame.width / 2
         let halfHeight = visibleFrame.height / 2

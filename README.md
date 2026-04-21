@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="./dist/WindowNest-0.4.25-Installer.dmg">Download DMG</a> ·
-  <a href="./dist/WindowNest-0.4.25-macOS.zip">Download ZIP</a>
+  <a href="./dist/WindowNest-0.4.26-Installer.dmg">Download DMG</a> ·
+  <a href="./dist/WindowNest-0.4.26-macOS.zip">Download ZIP</a>
 </p>
 
 ## Preview
@@ -45,8 +45,8 @@ Current packaged downloads:
 
 | File | Purpose |
 | --- | --- |
-| [`WindowNest-0.4.25-Installer.dmg`](./dist/WindowNest-0.4.25-Installer.dmg) | Recommended drag-to-Applications installer |
-| [`WindowNest-0.4.25-macOS.zip`](./dist/WindowNest-0.4.25-macOS.zip) | Direct app archive |
+| [`WindowNest-0.4.26-Installer.dmg`](./dist/WindowNest-0.4.26-Installer.dmg) | Recommended drag-to-Applications installer |
+| [`WindowNest-0.4.26-macOS.zip`](./dist/WindowNest-0.4.26-macOS.zip) | Direct app archive |
 
 ## At A Glance
 
