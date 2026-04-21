@@ -11,7 +11,7 @@ final class WindowNestModel: ObservableObject {
     @Published private(set) var windowControlLabel = AppStrings.windowControlLabel(accessibilityGranted: false, ready: false)
     @Published private(set) var enabledLayoutKinds: Set<DragLayoutTileKind> = []
 
-    let version = "0.4.21"
+    let version = "0.4.22"
 
     private let windowManager = WindowManager()
     private let launchAtLoginService = LaunchAtLoginService()
