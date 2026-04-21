@@ -84,8 +84,8 @@ enum WindowLayoutPreset: String, CaseIterable, Identifiable {
         case .bottomRight:
             return CGRect(x: visibleFrame.minX + halfWidth, y: visibleFrame.minY, width: halfWidth, height: halfHeight)
         case .centerLarge:
-            let width = visibleFrame.width * 0.7
-            let height = visibleFrame.height * 0.78
+            let width = visibleFrame.width * 0.72
+            let height = visibleFrame.height * 0.66
             return CGRect(
                 x: visibleFrame.midX - (width / 2),
                 y: visibleFrame.midY - (height / 2),

@@ -40,9 +40,17 @@ enum AppStrings {
     static var guideTitle: String { value(en: "Drag a window to show layout targets", zhHans: "拖动窗口即可呼出布局板", zhHant: "拖動視窗即可呼出版面板") }
     static var guideDescription: String {
         value(
-            en: "When you drag a window, WindowNest shows three targets in the middle of the current screen: left or right, maximize, and top or bottom.",
-            zhHans: "拖住窗口后，WindowNest 会在当前屏幕中间显示三个目标区：左 / 右屏、全屏、上 / 下屏。",
-            zhHant: "拖住視窗後，WindowNest 會在目前螢幕中央顯示三個目標區：左 / 右屏、全螢幕、上 / 下屏。"
+            en: "When you drag a window, WindowNest shows four targets on the current screen: left or right, maximize, top or bottom, and center.",
+            zhHans: "拖住窗口后，WindowNest 会在当前屏幕显示四个目标区：左 / 右屏、全屏、上 / 下屏、居中。",
+            zhHant: "拖住視窗後，WindowNest 會在目前螢幕顯示四個目標區：左 / 右屏、全螢幕、上 / 下屏、置中。"
+        )
+    }
+    static var layoutModesTitle: String { value(en: "Layout Modes", zhHans: "分屏方式", zhHant: "分屏方式") }
+    static var layoutModesHint: String {
+        value(
+            en: "Choose which drag targets and quick actions are available.",
+            zhHans: "选择哪些拖动目标和快捷操作可用。",
+            zhHant: "選擇哪些拖動目標與快速操作可用。"
         )
     }
     static var quickActionsTitle: String { value(en: "Quick Actions", zhHans: "快速布局", zhHant: "快速版面") }
@@ -50,6 +58,8 @@ enum AppStrings {
     static var tileLeftRight: String { value(en: "Left / Right", zhHans: "左 / 右屏", zhHant: "左 / 右屏") }
     static var tileFullscreen: String { value(en: "Maximize", zhHans: "全屏", zhHant: "全螢幕") }
     static var tileTopBottom: String { value(en: "Top / Bottom", zhHans: "上 / 下屏", zhHant: "上 / 下屏") }
+    static var tileLeftRightSubtitle: String { value(en: "Show a two-column split", zhHans: "显示左右两栏分屏", zhHant: "顯示左右兩欄分屏") }
+    static var tileTopBottomSubtitle: String { value(en: "Show a two-row split", zhHans: "显示上下两栏分屏", zhHant: "顯示上下兩欄分屏") }
     static var leftHint: String { value(en: "Left", zhHans: "左", zhHant: "左") }
     static var rightHint: String { value(en: "Right", zhHans: "右", zhHant: "右") }
     static var fillHint: String { value(en: "Fill", zhHans: "铺满", zhHant: "鋪滿") }
@@ -65,9 +75,9 @@ enum AppStrings {
     }
     static var dragReadyStatus: String {
         value(
-            en: "Drag a window to show the three targets: left or right, maximize, and top or bottom.",
-            zhHans: "拖动窗口时会显示“左/右屏、全屏、上/下屏”三个浮动区域。",
-            zhHant: "拖動視窗時會顯示「左 / 右屏、全螢幕、上 / 下屏」三個浮動區域。"
+            en: "Drag a window to show four targets: left or right, maximize, top or bottom, and center.",
+            zhHans: "拖动窗口时会显示“左/右屏、全屏、上/下屏、居中”四个浮动区域。",
+            zhHant: "拖動視窗時會顯示「左 / 右屏、全螢幕、上 / 下屏、置中」四個浮動區域。"
         )
     }
     static var waitingForTargetStatus: String {

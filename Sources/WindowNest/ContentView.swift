@@ -6,11 +6,11 @@ struct ContentView: View {
     static var preferredPopoverWidth: CGFloat {
         switch AppLanguage.current {
         case .english:
-            return 368
+            return 392
         case .simplifiedChinese:
-            return 384
+            return 408
         case .traditionalChinese:
-            return 396
+            return 420
         }
     }
 
@@ -18,6 +18,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             headerRow
             accessCard
+            layoutModesSection
             dragGuideCard
             quickActionsSection
             footerRow
@@ -101,6 +102,47 @@ struct ContentView: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
+    private var layoutModesSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(AppStrings.layoutModesTitle)
+                    .font(.subheadline.weight(.semibold))
+
+                Text(AppStrings.layoutModesHint)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(model.layoutKinds) { kind in
+                    HStack(alignment: .top, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(kind.title)
+                                .font(.footnote.weight(.medium))
+
+                            Text(kind.subtitle)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
+                        Spacer()
+
+                        Toggle("", isOn: Binding(
+                            get: { model.isLayoutKindEnabled(kind) },
+                            set: { model.setLayoutKind(kind, enabled: $0) }
+                        ))
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
     private var dragGuideCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label(AppStrings.guideTitle, systemImage: "rectangle.on.rectangle")
@@ -110,10 +152,14 @@ struct ContentView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: 10) {
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 8),
+                GridItem(.flexible(), spacing: 8)
+            ], spacing: 8) {
                 miniTile(title: AppStrings.tileLeftRight)
                 miniTile(title: AppStrings.tileFullscreen)
                 miniTile(title: AppStrings.tileTopBottom)
+                miniTile(title: AppStrings.layoutCenterLargeTitle)
             }
         }
         .padding(14)

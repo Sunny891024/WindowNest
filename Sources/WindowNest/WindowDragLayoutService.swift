@@ -41,6 +41,7 @@ final class WindowDragLayoutService {
     private var sleepEventCount = 0
     private var wakeEventCount = 0
     private var healthRecoveryCount = 0
+    private var enabledTileKinds: Set<DragLayoutTileKind> = Set(DragLayoutTileKind.allCases)
 
     init(
         onStatusMessage: @escaping (String) -> Void,
@@ -61,6 +62,14 @@ final class WindowDragLayoutService {
 
         if session == nil {
             onDebugStatusChange(AppStrings.waitingDrag)
+        }
+    }
+
+    func updateEnabledLayoutKinds(_ enabledKinds: Set<DragLayoutTileKind>) {
+        enabledTileKinds = enabledKinds
+        if let overlayController, session?.screen != nil {
+            let hoveredTarget = session?.hoveredTarget.flatMap { enabledKinds.contains($0.tileKind) ? $0 : nil }
+            overlayController.updateHoveredTarget(hoveredTarget, enabledKinds: enabledKinds)
         }
     }
 
@@ -466,12 +475,12 @@ final class WindowDragLayoutService {
 
         if overlayController == nil || session.screen !== screen {
             overlayController?.hide()
-            overlayController = DragLayoutOverlayController(screen: screen)
+            overlayController = DragLayoutOverlayController(screen: screen, enabledKinds: enabledTileKinds)
             session.screen = screen
         }
 
         let hoveredTarget = hoveredTarget(at: currentLocation, on: screen)
-        overlayController?.show(on: screen, hoveredTarget: hoveredTarget)
+        overlayController?.show(on: screen, hoveredTarget: hoveredTarget, enabledKinds: enabledTileKinds)
 
         session.overlayShown = true
         session.hoveredTarget = hoveredTarget
@@ -534,18 +543,23 @@ final class WindowDragLayoutService {
 
     private func hoveredTarget(at mouseLocation: CGPoint, on screen: NSScreen) -> DragLayoutDropTarget? {
         let leftRightFrame = globalFrame(for: .leftRight, on: screen)
-        if leftRightFrame.contains(mouseLocation) {
+        if enabledTileKinds.contains(.leftRight), leftRightFrame.contains(mouseLocation) {
             return mouseLocation.x < leftRightFrame.midX ? .leftHalf : .rightHalf
         }
 
         let fullscreenFrame = globalFrame(for: .fullscreen, on: screen)
-        if fullscreenFrame.contains(mouseLocation) {
+        if enabledTileKinds.contains(.fullscreen), fullscreenFrame.contains(mouseLocation) {
             return .maximize
         }
 
         let topBottomFrame = globalFrame(for: .topBottom, on: screen)
-        if topBottomFrame.contains(mouseLocation) {
+        if enabledTileKinds.contains(.topBottom), topBottomFrame.contains(mouseLocation) {
             return mouseLocation.y > topBottomFrame.midY ? .topHalf : .bottomHalf
+        }
+
+        let centerFrame = globalFrame(for: .center, on: screen)
+        if enabledTileKinds.contains(.center), centerFrame.contains(mouseLocation) {
+            return .center
         }
 
         return nil

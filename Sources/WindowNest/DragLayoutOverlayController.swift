@@ -6,7 +6,7 @@ final class DragLayoutOverlayController {
     private let panel: NSPanel
     private let hostingController: NSHostingController<DragLayoutOverlayView>
 
-    init(screen: NSScreen) {
+    init(screen: NSScreen, enabledKinds: Set<DragLayoutTileKind>) {
         panel = NSPanel(
             contentRect: screen.frame,
             styleMask: [.borderless, .nonactivatingPanel],
@@ -24,7 +24,8 @@ final class DragLayoutOverlayController {
 
         hostingController = NSHostingController(
             rootView: DragLayoutOverlayView(
-                hoveredTarget: nil
+                hoveredTarget: nil,
+                enabledKinds: enabledKinds
             )
         )
         hostingController.view.frame = panel.contentView?.bounds ?? .zero
@@ -32,20 +33,21 @@ final class DragLayoutOverlayController {
         panel.contentViewController = hostingController
     }
 
-    func show(on screen: NSScreen, hoveredTarget: DragLayoutDropTarget?) {
+    func show(on screen: NSScreen, hoveredTarget: DragLayoutDropTarget?, enabledKinds: Set<DragLayoutTileKind>) {
         if panel.screen != screen || panel.frame != screen.frame {
             panel.setFrame(screen.frame, display: false)
         }
 
-        updateHoveredTarget(hoveredTarget)
+        updateHoveredTarget(hoveredTarget, enabledKinds: enabledKinds)
 
         guard !panel.isVisible else { return }
         panel.orderFrontRegardless()
     }
 
-    func updateHoveredTarget(_ target: DragLayoutDropTarget?) {
+    func updateHoveredTarget(_ target: DragLayoutDropTarget?, enabledKinds: Set<DragLayoutTileKind>) {
         hostingController.rootView = DragLayoutOverlayView(
-            hoveredTarget: target
+            hoveredTarget: target,
+            enabledKinds: enabledKinds
         )
     }
 

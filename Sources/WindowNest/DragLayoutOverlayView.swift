@@ -1,9 +1,10 @@
 import SwiftUI
 
-enum DragLayoutTileKind: CaseIterable, Identifiable {
+enum DragLayoutTileKind: String, CaseIterable, Identifiable {
     case leftRight
     case fullscreen
     case topBottom
+    case center
 
     var id: Self { self }
 
@@ -12,6 +13,29 @@ enum DragLayoutTileKind: CaseIterable, Identifiable {
         case .leftRight: return AppStrings.tileLeftRight
         case .fullscreen: return AppStrings.tileFullscreen
         case .topBottom: return AppStrings.tileTopBottom
+        case .center: return AppStrings.layoutCenterLargeTitle
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .leftRight: return AppStrings.tileLeftRightSubtitle
+        case .fullscreen: return AppStrings.layoutMaximizeSubtitle
+        case .topBottom: return AppStrings.tileTopBottomSubtitle
+        case .center: return AppStrings.layoutCenterLargeSubtitle
+        }
+    }
+
+    var presets: [WindowLayoutPreset] {
+        switch self {
+        case .leftRight:
+            return [.leftHalf, .rightHalf]
+        case .fullscreen:
+            return [.maximize]
+        case .topBottom:
+            return [.topHalf, .bottomHalf]
+        case .center:
+            return [.centerLarge]
         }
     }
 }
@@ -22,6 +46,7 @@ enum DragLayoutDropTarget: Equatable {
     case maximize
     case topHalf
     case bottomHalf
+    case center
 
     var preset: WindowLayoutPreset {
         switch self {
@@ -30,6 +55,7 @@ enum DragLayoutDropTarget: Equatable {
         case .maximize: return .maximize
         case .topHalf: return .topHalf
         case .bottomHalf: return .bottomHalf
+        case .center: return .centerLarge
         }
     }
 
@@ -38,19 +64,21 @@ enum DragLayoutDropTarget: Equatable {
         case .leftHalf, .rightHalf: return .leftRight
         case .maximize: return .fullscreen
         case .topHalf, .bottomHalf: return .topBottom
+        case .center: return .center
         }
     }
 }
 
 struct DragLayoutOverlayView: View {
     let hoveredTarget: DragLayoutDropTarget?
+    let enabledKinds: Set<DragLayoutTileKind>
 
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 Color.clear
 
-                ForEach(DragLayoutTileKind.allCases) { kind in
+                ForEach(DragLayoutTileKind.allCases.filter { enabledKinds.contains($0) }) { kind in
                     tile(for: kind, in: geometry.size)
                 }
             }
@@ -106,6 +134,8 @@ struct DragLayoutOverlayView: View {
                         highlightSecond: hoveredTarget == .bottomHalf,
                         size: geometry.size
                     )
+                case .center:
+                    centeredPreview(highlighted: hoveredTarget == .center, size: geometry.size)
                 }
             }
 
@@ -134,6 +164,12 @@ struct DragLayoutOverlayView: View {
                 Spacer()
                 hintCapsule(AppStrings.bottomHint, active: hoveredTarget == .bottomHalf)
             }
+        case .center:
+            HStack {
+                Spacer()
+                hintCapsule(AppStrings.layoutCenterLargeTitle, active: hoveredTarget == .center)
+                Spacer()
+            }
         }
     }
 
@@ -156,6 +192,27 @@ struct DragLayoutOverlayView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(previewStroke(highlighted), lineWidth: highlighted ? 3 : 1.5)
             )
+    }
+
+    private func centeredPreview(highlighted: Bool, size: CGSize) -> some View {
+        let innerWidth = size.width * 0.68
+        let innerHeight = size.height * 0.62
+
+        return ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color(red: 0.25, green: 0.37, blue: 0.48).opacity(0.18))
+
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(previewStroke(highlighted), lineWidth: highlighted ? 2.5 : 1.25)
+
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(previewFill(highlighted))
+                .frame(width: innerWidth, height: innerHeight)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(previewStroke(highlighted), lineWidth: highlighted ? 3 : 1.5)
+                )
+        }
     }
 
     private func splitPreview(
@@ -222,6 +279,8 @@ enum DragLayoutOverlayMetrics {
             return CGRect(x: centerX - width / 2, y: y - height / 2, width: width, height: height)
         case .topBottom:
             return CGRect(x: centerX + gap + width / 2, y: y - height / 2, width: width, height: height)
+        case .center:
+            return CGRect(x: centerX - width / 2, y: max(40, y - height - 28), width: width, height: height)
         }
     }
 }
