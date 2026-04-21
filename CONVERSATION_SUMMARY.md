@@ -38,7 +38,7 @@
 
 ## 发布与版本
 
-最后一个发布版本是 `0.4.23`。
+最后一个发布版本是 `0.4.25`。
 
 已同步内容：
 
@@ -47,18 +47,18 @@
 - DMG 安装包
 - ZIP 安装包
 - GitHub 主分支
-- Git tag `v0.4.23`
+- Git tag `v0.4.25`
 
 ## 当前状态
 
 - 调试入口已移除，界面恢复为发布版样式。
-- 当前版本为 `0.4.23`。
+- 当前版本为 `0.4.25`。
 - GitHub 仓库将同步这轮发布分支。
 
 ## 最近产物
 
-- `WindowNest-0.4.23-Installer.dmg`
-- `WindowNest-0.4.23-macOS.zip`
+- `WindowNest-0.4.25-Installer.dmg`
+- `WindowNest-0.4.25-macOS.zip`
 - `CONVERSATION_SUMMARY.md`
 
 ## 后续建议

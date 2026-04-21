@@ -267,19 +267,20 @@ struct DragLayoutOverlayView: View {
 enum DragLayoutOverlayMetrics {
     static func tileFrame(for kind: DragLayoutTileKind, in size: CGSize) -> CGRect {
         let outerPadding = max(24, min(size.width, size.height) * 0.06)
-        let gapX = max(18, size.width * 0.035)
-        let gapY = max(18, size.height * 0.035)
-        let tileWidth = min(380, max(220, (size.width - outerPadding * 2 - gapX) / 2))
-        let tileHeight = min(286, max(190, (size.height - outerPadding * 2 - gapY) / 2))
-        let totalWidth = tileWidth * 2 + gapX
-        let totalHeight = tileHeight * 2 + gapY
+        let gapX = max(14, size.width * 0.02)
+        let tileWidth = min(300, max(160, (size.width - outerPadding * 2 - gapX * 3) / 4))
+        let tileHeight = min(230, max(150, tileWidth * 0.74))
+        let totalWidth = tileWidth * 4 + gapX * 3
         let originX = max(outerPadding, (size.width - totalWidth) / 2)
-        let originY = max(outerPadding, (size.height - totalHeight) / 2)
+        let y = min(
+            size.height - tileHeight / 2 - 48,
+            max(tileHeight / 2 + 40, size.height * 0.74)
+        )
 
-        func frame(column: Int, row: Int) -> CGRect {
+        func frame(column: Int) -> CGRect {
             CGRect(
                 x: originX + CGFloat(column) * (tileWidth + gapX),
-                y: originY + CGFloat(row) * (tileHeight + gapY),
+                y: y - tileHeight / 2,
                 width: tileWidth,
                 height: tileHeight
             )
@@ -287,13 +288,13 @@ enum DragLayoutOverlayMetrics {
 
         switch kind {
         case .leftRight:
-            return frame(column: 0, row: 0)
+            return frame(column: 0)
         case .fullscreen:
-            return frame(column: 1, row: 0)
+            return frame(column: 1)
         case .topBottom:
-            return frame(column: 0, row: 1)
+            return frame(column: 2)
         case .center:
-            return frame(column: 1, row: 1)
+            return frame(column: 3)
         }
     }
 }

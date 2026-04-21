@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var model: WindowNestModel
+    @State private var showMoreOptions = false
 
     static var preferredPopoverWidth: CGFloat {
         switch AppLanguage.current {
@@ -18,9 +19,8 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             headerRow
             accessCard
-            layoutModesSection
-            dragGuideCard
             quickActionsSection
+            moreOptionsSection
             footerRow
         }
         .padding(12)
@@ -79,23 +79,6 @@ struct ContentView: View {
                 .controlSize(.small)
 
                 Spacer()
-            }
-
-            HStack(spacing: 10) {
-                Text(AppStrings.launchAtLogin)
-                    .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-
-                Spacer()
-
-                Toggle("", isOn: Binding(
-                    get: { model.launchAtLoginEnabled },
-                    set: { model.toggleLaunchAtLogin($0) }
-                ))
-                .toggleStyle(.switch)
-                .labelsHidden()
             }
         }
         .padding(14)
@@ -171,16 +154,62 @@ struct ContentView: View {
             Text(AppStrings.quickActionsTitle)
                 .font(.subheadline.weight(.semibold))
 
-            HStack(spacing: 8) {
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 8),
+                GridItem(.flexible(), spacing: 8)
+            ], spacing: 8) {
                 ForEach(model.layouts) { layout in
                     Button(layout.shortTitle) {
                         model.apply(layout)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
+                    .frame(maxWidth: .infinity)
                     .disabled(!model.accessibilityGranted)
                 }
             }
+        }
+    }
+
+    private var moreOptionsSection: some View {
+        DisclosureGroup(isExpanded: $showMoreOptions) {
+            VStack(alignment: .leading, spacing: 12) {
+                launchAtLoginRow
+                layoutModesSection
+                dragGuideCard
+            }
+            .padding(.top, 10)
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(AppStrings.moreOptionsTitle)
+                    .font(.subheadline.weight(.semibold))
+
+                Text(AppStrings.moreOptionsHint)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(14)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var launchAtLoginRow: some View {
+        HStack(spacing: 10) {
+            Text(AppStrings.launchAtLogin)
+                .font(.footnote.weight(.medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+
+            Spacer()
+
+            Toggle("", isOn: Binding(
+                get: { model.launchAtLoginEnabled },
+                set: { model.toggleLaunchAtLogin($0) }
+            ))
+            .toggleStyle(.switch)
+            .labelsHidden()
         }
     }
 
