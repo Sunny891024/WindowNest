@@ -566,7 +566,8 @@ final class WindowDragLayoutService {
     }
 
     private func globalFrame(for kind: DragLayoutTileKind, on screen: NSScreen) -> CGRect {
-        let localFrame = DragLayoutOverlayMetrics.tileFrame(for: kind, in: screen.frame.size)
+        let visibleKinds = DragLayoutTileKind.allCases.filter { enabledTileKinds.contains($0) }
+        let localFrame = DragLayoutOverlayMetrics.tileFrame(for: kind, visibleKinds: visibleKinds, in: screen.frame.size)
         return CGRect(
             x: screen.frame.minX + localFrame.minX,
             y: screen.frame.maxY - localFrame.maxY,

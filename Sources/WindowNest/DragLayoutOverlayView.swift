@@ -75,18 +75,20 @@ struct DragLayoutOverlayView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let visibleKinds = DragLayoutTileKind.allCases.filter { enabledKinds.contains($0) }
+
             ZStack {
                 Color.clear
 
-                ForEach(DragLayoutTileKind.allCases.filter { enabledKinds.contains($0) }) { kind in
-                    tile(for: kind, in: geometry.size)
+                ForEach(visibleKinds) { kind in
+                    tile(for: kind, in: geometry.size, visibleKinds: visibleKinds)
                 }
             }
         }
     }
 
-    private func tile(for kind: DragLayoutTileKind, in size: CGSize) -> some View {
-        let frame = DragLayoutOverlayMetrics.tileFrame(for: kind, in: size)
+    private func tile(for kind: DragLayoutTileKind, in size: CGSize, visibleKinds: [DragLayoutTileKind]) -> some View {
+        let frame = DragLayoutOverlayMetrics.tileFrame(for: kind, visibleKinds: visibleKinds, in: size)
         let tileActive = hoveredTarget?.tileKind == kind
 
         return RoundedRectangle(cornerRadius: 20)
@@ -265,36 +267,27 @@ struct DragLayoutOverlayView: View {
 }
 
 enum DragLayoutOverlayMetrics {
-    static func tileFrame(for kind: DragLayoutTileKind, in size: CGSize) -> CGRect {
+    static func tileFrame(for kind: DragLayoutTileKind, visibleKinds: [DragLayoutTileKind], in size: CGSize) -> CGRect {
+        let visibleKinds = visibleKinds.isEmpty ? DragLayoutTileKind.allCases : visibleKinds
+        let visibleCount = max(1, visibleKinds.count)
+        let index = max(0, visibleKinds.firstIndex(of: kind) ?? 0)
+
         let outerPadding = max(24, min(size.width, size.height) * 0.06)
         let gapX = max(14, size.width * 0.02)
-        let tileWidth = min(300, max(160, (size.width - outerPadding * 2 - gapX * 3) / 4))
+        let tileWidth = min(300, max(160, (size.width - outerPadding * 2 - gapX * CGFloat(visibleCount - 1)) / CGFloat(visibleCount)))
         let tileHeight = min(230, max(150, tileWidth * 0.74))
-        let totalWidth = tileWidth * 4 + gapX * 3
+        let totalWidth = tileWidth * CGFloat(visibleCount) + gapX * CGFloat(visibleCount - 1)
         let originX = max(outerPadding, (size.width - totalWidth) / 2)
         let y = min(
             size.height - tileHeight / 2 - 48,
             max(tileHeight / 2 + 40, size.height * 0.74)
         )
 
-        func frame(column: Int) -> CGRect {
-            CGRect(
-                x: originX + CGFloat(column) * (tileWidth + gapX),
-                y: y - tileHeight / 2,
-                width: tileWidth,
-                height: tileHeight
-            )
-        }
-
-        switch kind {
-        case .leftRight:
-            return frame(column: 0)
-        case .fullscreen:
-            return frame(column: 1)
-        case .topBottom:
-            return frame(column: 2)
-        case .center:
-            return frame(column: 3)
-        }
+        return CGRect(
+            x: originX + CGFloat(index) * (tileWidth + gapX),
+            y: y - tileHeight / 2,
+            width: tileWidth,
+            height: tileHeight
+        )
     }
 }

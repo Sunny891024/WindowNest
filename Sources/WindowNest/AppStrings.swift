@@ -56,9 +56,9 @@ enum AppStrings {
     static var moreOptionsTitle: String { value(en: "More Options", zhHans: "更多选项", zhHant: "更多選項") }
     static var moreOptionsHint: String {
         value(
-            en: "Launch at login, layout modes, and the drag guide live here.",
-            zhHans: "开机启动、分屏方式和拖动说明都放在这里。",
-            zhHant: "開機啟動、分屏方式與拖動說明都放在這裡。"
+            en: "Launch at login and the drag guide live here.",
+            zhHans: "开机启动和拖动说明都放在这里。",
+            zhHant: "開機啟動與拖動說明都放在這裡。"
         )
     }
     static var quickActionsTitle: String { value(en: "Quick Actions", zhHans: "快速布局", zhHant: "快速版面") }

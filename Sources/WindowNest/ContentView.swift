@@ -19,20 +19,41 @@ struct ContentView: View {
         ZStack {
             backgroundLayer
 
-            VStack(alignment: .leading, spacing: 12) {
-                headerRow
-                accessCard
-                quickActionsSection
-                moreOptionsSection
-                footerRow
+            if showMoreOptions {
+                expandedContent
+            } else {
+                compactContent
             }
-            .padding(14)
         }
-        .frame(width: Self.preferredPopoverWidth, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear {
             model.refreshPermissions()
         }
+    }
+
+    private var expandedContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            headerRow
+            accessCard
+            layoutModesSection
+            quickActionsSection
+            moreOptionsSection
+            footerRow
+        }
+        .padding(14)
+        .frame(width: Self.preferredPopoverWidth, alignment: .leading)
+    }
+
+    private var compactContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            headerRow
+            accessCard
+            layoutModesSection
+            quickActionsSection
+            footerRow
+        }
+        .padding(14)
+        .frame(width: Self.preferredPopoverWidth, alignment: .leading)
     }
 
     private var backgroundLayer: some View {
@@ -214,14 +235,18 @@ struct ContentView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.95))
 
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 10),
-                GridItem(.flexible(), spacing: 10)
-            ], spacing: 10) {
-                ForEach(model.layouts) { layout in
-                    layoutActionTile(layout)
+            VStack(spacing: 10) {
+                ForEach(quickActionRows.indices, id: \.self) { index in
+                    quickActionRow(quickActionRows[index])
                 }
             }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private var quickActionRows: [[WindowLayoutPreset]] {
+        stride(from: 0, to: model.layouts.count, by: 2).map { startIndex in
+            Array(model.layouts[startIndex..<min(startIndex + 2, model.layouts.count)])
         }
     }
 
@@ -258,7 +283,6 @@ struct ContentView: View {
             if showMoreOptions {
                 VStack(alignment: .leading, spacing: 12) {
                     launchAtLoginRow
-                    layoutModesSection
                     dragGuideCard
                 }
                 .padding(.top, 12)
@@ -326,6 +350,26 @@ struct ContentView: View {
         )
     }
 
+    @ViewBuilder
+    private func quickActionRow(_ layouts: [WindowLayoutPreset]) -> some View {
+        switch layouts.count {
+        case 0:
+            EmptyView()
+        case 1:
+            HStack {
+                Spacer(minLength: 0)
+                layoutActionTile(layouts[0])
+                    .frame(maxWidth: 170)
+                Spacer(minLength: 0)
+            }
+        default:
+            HStack(spacing: 10) {
+                layoutActionTile(layouts[0])
+                layoutActionTile(layouts[1])
+            }
+        }
+    }
+
     private var controlCapsule: some View {
         Text(model.accessibilityGranted ? model.windowControlLabel : model.accessibilityCheckLabel)
             .font(.caption2.weight(.medium))
@@ -368,9 +412,7 @@ struct ContentView: View {
                         )
                         .frame(width: 30, height: 30)
 
-                    Image(systemName: layout.symbolName)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.white)
+                    layoutIcon(for: layout)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -402,6 +444,26 @@ struct ContentView: View {
         .buttonStyle(.plain)
         .disabled(!model.accessibilityGranted)
         .opacity(model.accessibilityGranted ? 1.0 : 0.62)
+    }
+
+    @ViewBuilder
+    private func layoutIcon(for layout: WindowLayoutPreset) -> some View {
+        switch layout {
+        case .centerLarge:
+            ZStack {
+                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                    .stroke(Color.white.opacity(0.92), lineWidth: 1.6)
+                    .frame(width: 17, height: 17)
+
+                RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                    .fill(Color.white.opacity(0.94))
+                    .frame(width: 7, height: 7)
+            }
+        default:
+            Image(systemName: layout.symbolName)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white)
+        }
     }
 }
 
