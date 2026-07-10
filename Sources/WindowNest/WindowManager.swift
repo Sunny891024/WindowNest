@@ -186,13 +186,17 @@ struct WindowManager {
             throw WindowManagerError.failedToReadWindowFrame
         }
 
-        let targetFrame = layout.frame(in: visibleFrame).integral
+        let targetFrame = layout == .maximize
+            ? (targetScreen?.frame ?? visibleFrame).integral
+            : layout.frame(in: visibleFrame).integral
         try setFrame(targetFrame, for: refreshedTarget.window)
     }
 
     func apply(layout: WindowLayoutPreset, to target: ManagedWindowTarget, on screen: NSScreen) throws {
         let refreshedTarget = refreshedTarget(for: target)
-        let targetFrame = layout.frame(in: screen.visibleFrame).integral
+        let targetFrame = layout == .maximize
+            ? screen.frame.integral
+            : layout.frame(in: screen.visibleFrame).integral
         try setFrame(targetFrame, for: refreshedTarget.window)
     }
 
@@ -241,6 +245,39 @@ struct WindowManager {
         }
 
         return windowTarget(forAppPID: pid, near: point)
+    }
+
+    func windowTargetsForAppPID(_ pid: pid_t) -> [ManagedWindowTarget] {
+        guard pid != ProcessInfo.processInfo.processIdentifier else {
+            return []
+        }
+
+        let appElement = AXUIElementCreateApplication(pid)
+        return copyWindows(for: appElement).compactMap { window in
+            guard let frame = readFrame(for: window), frame.width > 120, frame.height > 80 else {
+                return nil
+            }
+
+            return ManagedWindowTarget(appPID: pid, window: window, frame: frame)
+        }
+    }
+
+    func newWindowTargetForAppPID(
+        _ pid: pid_t,
+        excluding knownWindows: [AXUIElement],
+        near point: CGPoint
+    ) -> ManagedWindowTarget? {
+        let newTargets = windowTargetsForAppPID(pid).filter { candidate in
+            !knownWindows.contains(where: { CFEqual($0, candidate.window) })
+        }
+
+        if let contained = newTargets.first(where: { $0.frame.insetBy(dx: -40, dy: -40).contains(point) }) {
+            return contained
+        }
+
+        return newTargets.min(by: {
+            distance(from: point, to: $0.frame) < distance(from: point, to: $1.frame)
+        })
     }
 
     private func bestWindowHint(near point: CGPoint, filterPID: pid_t? = nil) -> WindowScreenHint? {
@@ -365,7 +402,7 @@ struct WindowManager {
             guard CFGetTypeID(cfItem) == AXUIElementGetTypeID() else {
                 return nil
             }
-            return unsafeBitCast(cfItem, to: AXUIElement.self)
+            return unsafeDowncast(cfItem, to: AXUIElement.self)
         }
     }
 
@@ -485,20 +522,63 @@ struct WindowManager {
             throw WindowManagerError.unsupportedWindow
         }
 
-        let positionResult = AXUIElementSetAttributeValue(
-            window,
-            kAXPositionAttribute as CFString,
-            originValue
-        )
-        let sizeResult = AXUIElementSetAttributeValue(
-            window,
-            kAXSizeAttribute as CFString,
-            sizeValue
-        )
-
-        guard positionResult == .success, sizeResult == .success else {
-            throw WindowManagerError.failedToMoveWindow
+        if try applyFrame(
+            frame,
+            to: window,
+            originValue: originValue,
+            sizeValue: sizeValue,
+            order: .sizeThenPosition
+        ) {
+            return
         }
+
+        if try applyFrame(
+            frame,
+            to: window,
+            originValue: originValue,
+            sizeValue: sizeValue,
+            order: .positionThenSize
+        ) {
+            return
+        }
+
+        throw WindowManagerError.failedToMoveWindow
+    }
+
+    private enum FrameWriteOrder {
+        case sizeThenPosition
+        case positionThenSize
+    }
+
+    private func applyFrame(
+        _ targetFrame: CGRect,
+        to window: AXUIElement,
+        originValue: AXValue,
+        sizeValue: AXValue,
+        order: FrameWriteOrder
+    ) throws -> Bool {
+        let writeResults: (AXError, AXError)
+
+        switch order {
+        case .sizeThenPosition:
+            let sizeResult = AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, sizeValue)
+            let positionResult = AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, originValue)
+            writeResults = (sizeResult, positionResult)
+        case .positionThenSize:
+            let positionResult = AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, originValue)
+            let sizeResult = AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, sizeValue)
+            writeResults = (positionResult, sizeResult)
+        }
+
+        guard writeResults.0 == .success, writeResults.1 == .success else {
+            return false
+        }
+
+        guard let actualFrame = readFrame(for: window) else {
+            return false
+        }
+
+        return framesApproximatelyEqual(actualFrame, targetFrame)
     }
 
     private func bestScreen(for frame: CGRect) -> NSScreen? {
@@ -527,6 +607,13 @@ struct WindowManager {
             width: frame.width,
             height: min(32, frame.height)
         )
+    }
+
+    private func framesApproximatelyEqual(_ lhs: CGRect, _ rhs: CGRect, tolerance: CGFloat = 1.0) -> Bool {
+        abs(lhs.origin.x - rhs.origin.x) <= tolerance &&
+        abs(lhs.origin.y - rhs.origin.y) <= tolerance &&
+        abs(lhs.size.width - rhs.size.width) <= tolerance &&
+        abs(lhs.size.height - rhs.size.height) <= tolerance
     }
 
     private func isPointInsideOwnWindow(at point: CGPoint) -> Bool {

@@ -10,6 +10,7 @@ final class WindowDragLayoutService {
         let initialMouseLocation: CGPoint
         let startedAt: Date
         var initialFrame: CGRect?
+        let initialAppWindows: [AXUIElement]
         let startedInDragRegion: Bool
         var overlayShown = false
         var screen: NSScreen?
@@ -397,12 +398,18 @@ final class WindowDragLayoutService {
             "Drag start probe: \(probeSummary), target=\(target.map { "\($0.appPID)" } ?? "nil"), frame=\(referenceFrame.map { describe($0) } ?? "nil")"
         )
 
+        let appPID = target?.appPID ?? initialHint?.appPID
+        let initialAppWindows = appPID.map {
+            windowManager.windowTargetsForAppPID($0).map(\.window)
+        } ?? []
+
         session = DragSession(
             target: target,
-            hintAppPID: target?.appPID ?? initialHint?.appPID,
+            hintAppPID: appPID,
             initialMouseLocation: mouseLocation,
             startedAt: now,
             initialFrame: referenceFrame,
+            initialAppWindows: initialAppWindows,
             startedInDragRegion: startedInDragRegion
         )
 
@@ -440,10 +447,26 @@ final class WindowDragLayoutService {
 
         let refreshedTarget = session.target.map { windowManager.refreshedTarget(for: $0) }
         session.target = refreshedTarget
-        let directMovementDetected = refreshedTarget.map { target in
+        var directMovementDetected = refreshedTarget.map { target in
             guard let initialFrame = session.initialFrame else { return false }
             return isWindowActuallyMoving(initialFrame: initialFrame, currentFrame: target.frame)
         } ?? false
+
+        if !directMovementDetected, let newWindowTarget = newlyCreatedWindowTarget(for: session, near: currentLocation) {
+            let isDifferentWindow = session.target.map {
+                !CFEqual($0.window, newWindowTarget.window)
+            } ?? true
+
+            if isDifferentWindow {
+                session.target = newWindowTarget
+                session.initialFrame = newWindowTarget.frame
+                session.movementObserved = true
+                session.movementEvidenceCount = 2
+                directMovementDetected = true
+                installObserver(for: newWindowTarget)
+                onDebugStatusChange(AppStrings.dragCapturedWindow)
+            }
+        }
 
         if !session.movementObserved {
             if directMovementDetected {
@@ -526,7 +549,8 @@ final class WindowDragLayoutService {
             guard let self else { return }
 
             do {
-                try self.windowManager.apply(layout: preset, to: windowTarget, on: screen)
+                let finalTarget = self.resolveReleaseTarget(for: session, dropLocation: location) ?? windowTarget
+                try self.windowManager.apply(layout: preset, to: finalTarget, on: screen)
                 self.onStatusMessage(AppStrings.movedWindow(to: preset.title))
                 self.onDebugStatusChange(AppStrings.releasedTo(preset.title))
             } catch {
@@ -621,6 +645,10 @@ final class WindowDragLayoutService {
     }
 
     private func resolveReleaseTarget(for session: DragSession, dropLocation: CGPoint) -> ManagedWindowTarget? {
+        if let newWindowTarget = newlyCreatedWindowTarget(for: session, near: dropLocation) {
+            return windowManager.refreshedTarget(for: newWindowTarget)
+        }
+
         if let target = session.target.map({ windowManager.refreshedTarget(for: $0) }) {
             return target
         }
@@ -634,6 +662,22 @@ final class WindowDragLayoutService {
             windowManager.frontmostWindowTarget(near: dropLocation) ??
             windowManager.frontmostWindowTarget(near: session.initialMouseLocation) ??
             (try? windowManager.focusedWindowTarget())
+    }
+
+    private func newlyCreatedWindowTarget(for session: DragSession, near location: CGPoint) -> ManagedWindowTarget? {
+        guard
+            let pid = session.hintAppPID,
+            let candidate = windowManager.newWindowTargetForAppPID(
+                pid,
+                excluding: session.initialAppWindows,
+                near: location
+            ),
+            candidate.frame.insetBy(dx: -48, dy: -48).contains(location)
+        else {
+            return nil
+        }
+
+        return candidate
     }
 
     private func fallbackFocusedTarget(near location: CGPoint) -> ManagedWindowTarget? {

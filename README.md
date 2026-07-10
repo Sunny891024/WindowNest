@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="./dist/WindowNest-0.4.32-Installer.dmg">Download DMG</a> ·
-  <a href="./dist/WindowNest-0.4.32-macOS.zip">Download ZIP</a>
+  <a href="./dist/WindowNest-0.4.37-Installer.dmg">Download DMG</a> ·
+  <a href="./dist/WindowNest-0.4.37-macOS.zip">Download ZIP</a>
 </p>
 
 ## Preview
@@ -28,10 +28,6 @@
 ### Drag Layout Board
 
 ![WindowNest drag preview](./docs/readme/overlay-preview.png)
-
-### Menu Bar Panel
-
-![WindowNest menu preview](./docs/readme/menu-preview.png)
 
 ## Overview
 
@@ -45,21 +41,28 @@ Current packaged downloads:
 
 | File | Purpose |
 | --- | --- |
-| [`WindowNest-0.4.32-Installer.dmg`](./dist/WindowNest-0.4.32-Installer.dmg) | Recommended drag-to-Applications installer |
-| [`WindowNest-0.4.32-macOS.zip`](./dist/WindowNest-0.4.32-macOS.zip) | Direct app archive |
+| [`WindowNest-0.4.37-Installer.dmg`](./dist/WindowNest-0.4.37-Installer.dmg) | Recommended drag-to-Applications installer |
+| [`WindowNest-0.4.37-macOS.zip`](./dist/WindowNest-0.4.37-macOS.zip) | Direct app archive |
+
+## What's New in 0.4.37
+
+- Correctly targets a newly detached Chrome tab window instead of resizing the original Chrome window
+- Improves maximize positioning and window-frame application reliability
+- Adds the `Center` layout and keeps all layout actions available from the menu bar
+- Reworks the menu bar panel into a compact vertical strip interface
 
 ## At A Glance
 
 - Drag a window to reveal a floating layout board
-- Snap into `Left / Right`, `Maximize`, or `Top / Bottom`
+- Snap into `Left / Right`, `Maximize`, `Top / Bottom`, or `Center`
 - Works with multiple displays
 - Lives quietly in the menu bar
 - Supports English, Simplified Chinese, and Traditional Chinese
 
 ## Features
 
-- Drag-first window snapping with three large floating targets
-- Layout groups for `Left / Right`, `Maximize`, and `Top / Bottom`
+- Drag-first window snapping with four large floating target groups
+- Layout groups for `Left / Right`, `Maximize`, `Top / Bottom`, and `Center`
 - Multi-display support
 - Menu bar quick actions as a manual fallback
 - Launch at login support
@@ -68,8 +71,8 @@ Current packaged downloads:
 
 ## 功能特点
 
-- 拖动窗口时自动显示三块浮动布局目标区
-- 支持 `左 / 右半屏`、`全屏`、`上 / 下半屏`
+- 拖动窗口时自动显示四组浮动布局目标区
+- 支持 `左 / 右半屏`、`全屏`、`上 / 下半屏`、`居中`
 - 支持多显示器场景
 - 提供菜单栏快速布局作为手动备用入口
 - 支持开机启动
@@ -79,14 +82,14 @@ Current packaged downloads:
 ## How It Works
 
 1. Start dragging a window from its title bar area.
-2. WindowNest shows three layout targets on the active screen.
+2. WindowNest shows four layout target groups on the active screen.
 3. Move the pointer onto the target you want.
 4. Release the mouse to snap the window into place.
 
 ## 使用方式
 
 1. 从窗口标题栏区域开始拖动窗口。
-2. WindowNest 会在当前屏幕显示三个浮动布局目标区。
+2. WindowNest 会在当前屏幕显示四组浮动布局目标区。
 3. 把鼠标移动到想要的布局区域上。
 4. 松手后，窗口会自动贴靠到对应位置。
 
@@ -128,7 +131,7 @@ WindowNest 需要以下 macOS 权限来控制其他应用窗口：
 - Continue refining drag detection stability across different apps
 - Improve multi-display behavior and edge cases
 - Add more polished onboarding and product visuals
-- Move packaged downloads into GitHub Releases
+- Publish signed packaged downloads with each tagged release
 
 ## Product Notes
 
